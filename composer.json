@@ -1,0 +1,48 @@
+{
+  "name": "shogogg/pico",
+  "version": "0.1.0",
+  "description": "parser combinator library for PHP",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "shogogg",
+      "email": "shogo@studiofly.net"
+    }
+  ],
+  "require": {
+    "php": "^8.5",
+    "ext-ctype": "*",
+    "ext-mbstring": "*"
+  },
+  "require-dev": {
+    "pestphp/pest": "^5.1",
+    "phpstan/phpstan": "^2.2",
+    "friendsofphp/php-cs-fixer": "^3.95",
+    "pestphp/pest-plugin-phpstan": "^5.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Pico\\": "src/"
+    },
+    "files": [
+      "src/Parsers/functions.php"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Pico\\PHPStan\\": "tools/phpstan/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "scripts": {
+    "analyze": "phpstan analyse -c phpstan.neon",
+    "fix": "php-cs-fixer fix --config=.php-cs-fixer.php",
+    "fix:dry-run": "composer fix -- --dry-run --diff --verbose",
+    "test": "pest"
+  }
+}

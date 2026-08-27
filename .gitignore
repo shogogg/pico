@@ -1,0 +1,9 @@
+# Directrries
+.idea/
+vendor/
+
+# Cache files
+*.cache
+
+# Local Settings
+.php-version
