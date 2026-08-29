@@ -14,6 +14,7 @@ use Pico\Contracts\Parser;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\PredicateParser;
+use Pico\Parsers\SeqParser;
 
 /**
  * Parser factory facade.
@@ -140,5 +141,17 @@ final class Pico
     public static function predicate(Closure $predicate): Parser
     {
         return new PredicateParser($predicate);
+    }
+
+    /**
+     * Creates a parser that matches a sequence of parsers.
+     *
+     * @template T
+     * @param Parser<T> ...$parsers
+     * @return Parser<list<T>>
+     */
+    public static function seq(Parser ...$parsers): Parser
+    {
+        return new SeqParser(...$parsers);
     }
 }

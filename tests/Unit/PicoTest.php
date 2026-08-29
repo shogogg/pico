@@ -10,6 +10,7 @@ declare(strict_types=1);
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\PredicateParser;
+use Pico\Parsers\SeqParser;
 use Pico\Pico;
 
 describe('Pico::alpha()', function (): void {
@@ -192,5 +193,23 @@ describe('Pico::predicate()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf('x', 1);
+    });
+});
+
+describe('Pico::seq()', function (): void {
+    it('should return a SeqParser instance', function (): void {
+        // Act
+        $actual = Pico::seq(Pico::char('A'), Pico::digit());
+
+        // Assert
+        expect($actual)->toBeInstanceOf(SeqParser::class);
+    });
+
+    it('should parse each parser in sequence', function (): void {
+        // Act
+        $actual = Pico::seq(Pico::char('A'), Pico::digit())->parse('A123');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['A', '1'], 2);
     });
 });
