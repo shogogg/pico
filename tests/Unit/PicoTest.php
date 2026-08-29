@@ -8,6 +8,7 @@
 declare(strict_types=1);
 
 use Pico\Parsers\AnyCharParser;
+use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\SeqParser;
@@ -92,6 +93,24 @@ describe('Pico::anyChar()', function (): void {
     it('should parse any character', function (): void {
         // Act
         $actual = Pico::anyChar()->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('A', 1);
+    });
+});
+
+describe('Pico::anyOf()', function (): void {
+    it('should return an AnyOfParser instance', function (): void {
+        // Act
+        $actual = Pico::anyOf(Pico::char('A'), Pico::digit());
+
+        // Assert
+        expect($actual)->toBeInstanceOf(AnyOfParser::class);
+    });
+
+    it('should parse the first matching parser', function (): void {
+        // Act
+        $actual = Pico::anyOf(Pico::char('A'), Pico::digit())->parse('A1');
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);

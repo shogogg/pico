@@ -12,6 +12,7 @@ namespace Pico;
 use Closure;
 use Pico\Contracts\Parser;
 use Pico\Parsers\AnyCharParser;
+use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\SeqParser;
@@ -97,6 +98,18 @@ final class Pico
             'anyChar',
             static fn (): Parser => new AnyCharParser(),
         );
+    }
+
+    /**
+     * Creates a parser that matches the first successful parser.
+     *
+     * @template T
+     * @param Parser<T> ...$parsers
+     * @return Parser<T>
+     */
+    public static function anyOf(Parser ...$parsers): Parser
+    {
+        return new AnyOfParser(...$parsers);
     }
 
     /**
