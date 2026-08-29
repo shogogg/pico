@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace Pico\Contracts;
 
+use Closure;
+
 /**
  * Interface for the result of a parser.
  *
@@ -37,4 +39,13 @@ interface ParserResult
      * @return T
      */
     public function output();
+
+    /**
+     * Transforms the output of a successful result.
+     *
+     * @template U
+     * @param Closure(T): U $fn
+     * @return ParserResult<U>
+     */
+    public function map(Closure $fn): ParserResult;
 }

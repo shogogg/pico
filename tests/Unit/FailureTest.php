@@ -39,11 +39,42 @@ describe('->consumedLength()', function (): void {
 
 describe('->output()', function (): void {
     it('should throw an exception because there is no output', function (): void {
+        // Arrange
         $failure = Failure::getInstance();
 
         expect(function () use ($failure): void {
             $failure->output();
-        })
-            ->toThrow(LogicException::class, 'There is no value');
+        })->toThrow(
+            LogicException::class,
+            'There is no value',
+        );
+    });
+});
+
+describe('->map()', function (): void {
+    it('should return a failure', function (): void {
+        // Arrange
+        $failure = Failure::getInstance();
+
+        // Act
+        $actual = $failure->map(static fn (): string => 'value');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should not call the transformation', function (): void {
+        // Arrange
+        $failure = Failure::getInstance();
+        $wasCalled = false;
+
+        // Act
+        $failure->map(function () use (&$wasCalled): string {
+            $wasCalled = true;
+            return 'value';
+        });
+
+        // Assert
+        expect($wasCalled)->toBeFalse();
     });
 });

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Pico;
 
+use Closure;
 use LogicException;
 use Pico\Contracts\ParserResult;
 
@@ -59,5 +60,15 @@ final readonly class Failure implements ParserResult
     public function output(): never
     {
         throw new LogicException('There is no value');
+    }
+
+    /**
+     * @template U
+     * @param Closure(never): U $fn
+     * @return ParserResult<U>
+     */
+    public function map(Closure $fn): ParserResult
+    {
+        return $this;
     }
 }

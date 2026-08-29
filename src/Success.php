@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Pico;
 
+use Closure;
 use Pico\Contracts\ParserResult;
 
 /**
@@ -66,5 +67,15 @@ final readonly class Success implements ParserResult
     public function output()
     {
         return $this->output;
+    }
+
+    /**
+     * @template U
+     * @param Closure(T): U $fn
+     * @return ParserResult<U>
+     */
+    public function map(Closure $fn): ParserResult
+    {
+        return self::of(($fn)($this->output), $this->consumedLength);
     }
 }

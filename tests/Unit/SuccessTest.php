@@ -51,3 +51,13 @@ describe('->output()', function (): void {
         ['highlight', 9],
     ]);
 });
+
+describe('->map()', function (): void {
+    it('should transform the output and preserve the consumed length', function (): void {
+        // Act
+        $actual = Success::of('abc', 5)->map(static fn (string $output): int => strlen($output));
+
+        // Assert
+        expect($actual)->toBeSuccessOf(3, 5);
+    });
+});
