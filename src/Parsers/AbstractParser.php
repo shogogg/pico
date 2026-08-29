@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Pico\Parsers;
 
+use Closure;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 
@@ -25,6 +26,16 @@ abstract readonly class AbstractParser implements Parser, ContextualParser
     final public function parse(string $input): ParserResult
     {
         return $this->parseInput(new ParserInput($input));
+    }
+
+    /**
+     * @template U
+     * @param Closure(T): U $fn
+     * @return Parser<U>
+     */
+    final public function map(Closure $fn): Parser
+    {
+        return new MapParser($this, $fn);
     }
 
     /** {@inheritDoc} */

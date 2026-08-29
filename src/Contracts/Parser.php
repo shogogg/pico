@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Pico\Contracts;
 
+use Closure;
 use Pico\Exceptions\ParserInputException;
 
 /**
@@ -26,4 +27,13 @@ interface Parser
      * @throws ParserInputException
      */
     public function parse(string $input): ParserResult;
+
+    /**
+     * Transforms the output of a successful parse.
+     *
+     * @template U
+     * @param Closure(T): U $fn
+     * @return Parser<U>
+     */
+    public function map(Closure $fn): Parser;
 }
