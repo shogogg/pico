@@ -13,9 +13,6 @@ use LogicException;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 
-use function Pico\Parsers\failure;
-use function Pico\Parsers\success;
-
 /**
  * Parser that matches a sequence of parsers.
  *

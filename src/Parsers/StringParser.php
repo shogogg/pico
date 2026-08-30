@@ -11,8 +11,6 @@ namespace Pico\Parsers;
 
 use Pico\Contracts\ParserResult;
 
-use function Pico\Parsers\failure;
-
 /**
  * Parser that matches a specific string.
  *

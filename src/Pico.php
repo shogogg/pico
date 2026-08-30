@@ -15,6 +15,7 @@ use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\PredicateParser;
+use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\StringParser;
 
@@ -155,6 +156,18 @@ final class Pico
     public static function predicate(Closure $predicate): Parser
     {
         return new PredicateParser($predicate);
+    }
+
+    /**
+     * Creates a parser that repeatedly matches the given parser.
+     *
+     * @template T
+     * @param Parser<T> $parser
+     * @return Parser<list<T>>
+     */
+    public static function repeat(Parser $parser, int $min = 0, int $max = PHP_INT_MAX): Parser
+    {
+        return new RepeatParser($parser, $min, $max);
     }
 
     /**

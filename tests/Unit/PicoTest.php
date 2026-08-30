@@ -11,6 +11,7 @@ use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\PredicateParser;
+use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\StringParser;
 use Pico\Pico;
@@ -213,6 +214,24 @@ describe('Pico::predicate()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf('x', 1);
+    });
+});
+
+describe('Pico::repeat()', function (): void {
+    it('should return a RepeatParser instance', function (): void {
+        // Act
+        $actual = Pico::repeat(Pico::char('A'));
+
+        // Assert
+        expect($actual)->toBeInstanceOf(RepeatParser::class);
+    });
+
+    it('should parse the given parser repeatedly', function (): void {
+        // Act
+        $actual = Pico::repeat(Pico::char('A'), min: 1, max: 2)->parse('AAA');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['A', 'A'], 2);
     });
 });
 

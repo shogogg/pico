@@ -13,8 +13,6 @@ use LogicException;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 
-use function Pico\Parsers\failure;
-
 /**
  * Parser that matches the first successful parser.
  *

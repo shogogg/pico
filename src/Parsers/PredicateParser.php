@@ -12,9 +12,6 @@ namespace Pico\Parsers;
 use Closure;
 use Pico\Contracts\ParserResult;
 
-use function Pico\Parsers\failure;
-use function Pico\Parsers\success;
-
 /**
  * Parser that matches a character satisfying a predicate.
  *
