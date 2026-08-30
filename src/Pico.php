@@ -14,6 +14,7 @@ use Pico\Contracts\Parser;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
+use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SeqParser;
@@ -145,6 +146,18 @@ final class Pico
     public static function digit(): Parser
     {
         return self::createAsciiParser('digit', ctype_digit(...));
+    }
+
+    /**
+     * Creates a parser that makes the given parser optional.
+     *
+     * @template T
+     * @param Parser<T> $parser
+     * @return Parser<T|null>
+     */
+    public static function optional(Parser $parser): Parser
+    {
+        return new OptionalParser($parser);
     }
 
     /**

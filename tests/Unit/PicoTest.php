@@ -10,6 +10,7 @@ declare(strict_types=1);
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
+use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SeqParser;
@@ -197,6 +198,24 @@ describe('Pico::digit()', function (): void {
         'abc',
         '１２3',
     ]);
+});
+
+describe('Pico::optional()', function (): void {
+    it('should return an OptionalParser instance', function (): void {
+        // Act
+        $actual = Pico::optional(Pico::char('A'));
+
+        // Assert
+        expect($actual)->toBeInstanceOf(OptionalParser::class);
+    });
+
+    it('should parse the given parser optionally', function (): void {
+        // Act
+        $actual = Pico::optional(Pico::char('A'))->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('A', 1);
+    });
 });
 
 describe('Pico::predicate()', function (): void {
