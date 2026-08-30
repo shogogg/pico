@@ -16,6 +16,7 @@ use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\SeqParser;
+use Pico\Parsers\StringParser;
 
 /**
  * Parser factory facade.
@@ -166,5 +167,15 @@ final class Pico
     public static function seq(Parser ...$parsers): Parser
     {
         return new SeqParser(...$parsers);
+    }
+
+    /**
+     * Creates a parser that matches the given string.
+     *
+     * @return Parser<string>
+     */
+    public static function string(string $expected): Parser
+    {
+        return new StringParser($expected);
     }
 }

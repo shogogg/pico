@@ -71,6 +71,16 @@ final readonly class ParserInput
     }
 
     /**
+     * Determines whether the remaining input starts with the expected string.
+     */
+    public function startsWith(string $expected): bool
+    {
+        $length = mb_strlen($expected, 'UTF-8');
+
+        return $this->canConsume($length) && $this->take($length) === $expected;
+    }
+
+    /**
      * Returns this input advanced by the given character length.
      *
      * @throws ParserInputException When the length cannot be consumed.

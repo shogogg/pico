@@ -95,6 +95,27 @@ describe('ParserInput::current', function (): void {
     });
 });
 
+describe('ParserInput::startsWith', function (): void {
+    it('should determine whether the remaining input starts with the expected string', function (
+        string $input,
+        int $offset,
+        string $expected,
+        bool $matches,
+    ): void {
+        // Act
+        $actual = new ParserInput($input, $offset);
+
+        // Assert
+        expect($actual->startsWith($expected))->toBe($matches);
+    })->with([
+        ['abcdef', 0, 'abc', true],
+        ['xabcdef', 1, 'abc', true],
+        ['あいう', 0, 'あい', true],
+        ['abcdef', 0, 'abd', false],
+        ['abcdef', 4, 'cde', false],
+    ]);
+});
+
 describe('ParserInput::advanced', function (): void {
     it('should return a new input with the character offset advanced', function (): void {
         // Act

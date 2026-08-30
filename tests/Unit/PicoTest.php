@@ -12,6 +12,7 @@ use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\SeqParser;
+use Pico\Parsers\StringParser;
 use Pico\Pico;
 
 describe('Pico::alpha()', function (): void {
@@ -230,5 +231,23 @@ describe('Pico::seq()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf(['A', '1'], 2);
+    });
+});
+
+describe('Pico::string()', function (): void {
+    it('should return a StringParser instance', function (): void {
+        // Act
+        $actual = Pico::string('AB');
+
+        // Assert
+        expect($actual)->toBeInstanceOf(StringParser::class);
+    });
+
+    it('should parse the given string', function (): void {
+        // Act
+        $actual = Pico::string('AB')->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('AB', 2);
     });
 });
