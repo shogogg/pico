@@ -360,3 +360,32 @@ describe('Pico::whitespace()', function (): void {
         '　ABC',
     ]);
 });
+
+describe('Pico::whitespaces()', function (): void {
+    it('should return a RegExpParser instance', function (): void {
+        // Act
+        $actual = Pico::whitespaces();
+
+        // Assert
+        expect($actual)->toBeInstanceOf(RegExpParser::class);
+    });
+
+    it('should parse consecutive ASCII whitespace characters', function (): void {
+        // Act
+        $actual = Pico::whitespaces()->parse(" \t\nABC");
+
+        // Assert
+        expect($actual)->toBeSuccessOf(" \t\n", 3);
+    });
+
+    it('should fail when the input does not start with an ASCII whitespace character', function (string $input): void {
+        // Act
+        $actual = Pico::whitespaces()->parse($input);
+
+        // Assert
+        expect($actual)->toBeFailure();
+    })->with([
+        'ABC',
+        '　ABC',
+    ]);
+});

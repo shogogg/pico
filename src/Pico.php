@@ -238,4 +238,17 @@ final class Pico
     {
         return self::createAsciiParser('whitespace', ctype_space(...));
     }
+
+    /**
+     * Creates a parser that matches one or more consecutive ASCII whitespace characters.
+     *
+     * @return Parser<string>
+     */
+    public static function whitespaces(): Parser
+    {
+        return self::memoize(
+            'whitespaces',
+            static fn (): Parser => self::regexp('[ \t\r\n\f\v]+'),
+        );
+    }
 }
