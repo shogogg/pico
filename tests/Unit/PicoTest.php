@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
+use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
@@ -150,6 +151,32 @@ describe('Pico::ascii()', function (): void {
         'ＡBC',
         '１２3',
     ]);
+});
+
+describe('Pico::between()', function (): void {
+    it('should return a BetweenParser instance', function (): void {
+        // Act
+        $actual = Pico::between(
+            Pico::char('('),
+            Pico::char(')'),
+            Pico::regexp('[a-z]+'),
+        );
+
+        // Assert
+        expect($actual)->toBeInstanceOf(BetweenParser::class);
+    });
+
+    it('should return only the content output', function (): void {
+        // Act
+        $actual = Pico::between(
+            Pico::char('('),
+            Pico::char(')'),
+            Pico::regexp('[a-z]+'),
+        )->parse('(foo)');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('foo', 5);
+    });
 });
 
 describe('Pico::char()', function (): void {

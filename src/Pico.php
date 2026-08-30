@@ -13,6 +13,7 @@ use Closure;
 use Pico\Contracts\Parser;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
+use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
@@ -128,6 +129,22 @@ final class Pico
             'ascii',
             static fn (): Parser => self::predicate(static fn (string $char): bool => strlen($char) === 1),
         );
+    }
+
+    /**
+     * Creates a parser that matches content between opening and closing parsers.
+     *
+     * @template TOpen
+     * @template TContent
+     * @template TClose
+     * @param Parser<TOpen> $open
+     * @param Parser<TClose> $close
+     * @param Parser<TContent> $content
+     * @return Parser<TContent>
+     */
+    public static function between(Parser $open, Parser $close, Parser $content): Parser
+    {
+        return new BetweenParser($open, $close, $content);
     }
 
     /**
