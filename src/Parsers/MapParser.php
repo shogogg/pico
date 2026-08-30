@@ -10,9 +10,9 @@ declare(strict_types=1);
 namespace Pico\Parsers;
 
 use Closure;
-use LogicException;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
+use Pico\Exceptions\ParserException;
 
 /**
  * Parser that transforms the output of another parser.
@@ -38,7 +38,7 @@ final readonly class MapParser extends AbstractParser
     public function __construct(Parser $parser, Closure $fn)
     {
         if (!($parser instanceof ContextualParser)) {
-            throw new LogicException('The parser must implement ContextualParser.');
+            throw new ParserException('The parser must implement ContextualParser.');
         }
 
         $this->parser = $parser;

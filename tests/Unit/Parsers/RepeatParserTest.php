@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Parsers;
 
-use LogicException;
+use Pico\Exceptions\ParserException;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\RepeatParser;
@@ -21,7 +21,7 @@ describe('RepeatParser', function (): void {
         $action = fn (): RepeatParser => new RepeatParser(new CharParser('A'), min: -1);
 
         // Assert
-        expect($action)->toThrow(LogicException::class, 'The minimum repetition count must not be negative.');
+        expect($action)->toThrow(ParserException::class, 'The minimum repetition count must not be negative.');
     });
 
     it('should reject a maximum repetition count below the minimum', function (): void {
@@ -30,7 +30,7 @@ describe('RepeatParser', function (): void {
 
         // Assert
         expect($action)->toThrow(
-            LogicException::class,
+            ParserException::class,
             'The maximum repetition count must be at least the minimum repetition count.',
         );
     });

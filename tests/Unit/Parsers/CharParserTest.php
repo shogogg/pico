@@ -7,6 +7,7 @@
  */
 declare(strict_types=1);
 
+use Pico\Exceptions\ParserException;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 
@@ -17,7 +18,7 @@ describe('CharParser', function (): void {
         '',
         'ab',
         'あい',
-    ])->throws(LogicException::class, 'The character must be exactly one character long.');
+    ])->throws(ParserException::class, 'The character must be exactly one character long.');
 });
 
 describe('CharParser::parseInput', function (): void {

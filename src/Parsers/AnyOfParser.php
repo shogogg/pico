@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace Pico\Parsers;
 
-use LogicException;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
+use Pico\Exceptions\ParserException;
 
 /**
  * Parser that matches the first successful parser.
@@ -33,7 +33,7 @@ final readonly class AnyOfParser extends AbstractParser
     {
         foreach ($parsers as $parser) {
             if (!($parser instanceof ContextualParser)) {
-                throw new LogicException('All parsers must implement ContextualParser.');
+                throw new ParserException('All parsers must implement ContextualParser.');
             }
         }
         $this->parsers = array_values($parsers);

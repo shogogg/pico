@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace Pico\Parsers;
 
-use LogicException;
 use Pico\Contracts\ParserResult;
+use Pico\Exceptions\ParserException;
 
 /**
  * Parser that matches a specific character.
@@ -26,7 +26,7 @@ final readonly class CharParser extends AbstractParser
         private string $char,
     ) {
         if (mb_strlen($this->char) !== 1) {
-            throw new LogicException('The character must be exactly one character long.');
+            throw new ParserException('The character must be exactly one character long.');
         }
     }
 

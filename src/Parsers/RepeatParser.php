@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace Pico\Parsers;
 
-use LogicException;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
+use Pico\Exceptions\ParserException;
 
 /**
  * Parser that repeatedly matches another parser.
@@ -32,15 +32,15 @@ final readonly class RepeatParser extends AbstractParser
     public function __construct(Parser $parser, private int $min = 0, private int $max = PHP_INT_MAX)
     {
         if (!($parser instanceof ContextualParser)) {
-            throw new LogicException('The parser must implement ContextualParser.');
+            throw new ParserException('The parser must implement ContextualParser.');
         }
 
         if ($this->min < 0) {
-            throw new LogicException('The minimum repetition count must not be negative.');
+            throw new ParserException('The minimum repetition count must not be negative.');
         }
 
         if ($this->max < $this->min) {
-            throw new LogicException('The maximum repetition count must be at least the minimum repetition count.');
+            throw new ParserException('The maximum repetition count must be at least the minimum repetition count.');
         }
 
         $this->parser = $parser;
