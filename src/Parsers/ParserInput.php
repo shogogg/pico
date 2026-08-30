@@ -66,6 +66,14 @@ final readonly class ParserInput
     }
 
     /**
+     * Returns the current offset in bytes.
+     */
+    public function byteOffset(): int
+    {
+        return $this->byteOffset;
+    }
+
+    /**
      * Determines whether the requested character length can be consumed.
      *
      * @throws ParserInputException When the length is negative.

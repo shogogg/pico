@@ -64,6 +64,16 @@ describe('ParserInput::advanced', function (): void {
     });
 });
 
+describe('ParserInput::byteOffset', function (): void {
+    it('should return the current byte offset', function (): void {
+        // Act
+        $actual = new ParserInput('aあい', 2)->byteOffset();
+
+        // Assert
+        expect($actual)->toBe(4);
+    });
+});
+
 describe('ParserInput::canConsume', function (): void {
     it('should determine whether the requested character length is available', function (
         string $input,

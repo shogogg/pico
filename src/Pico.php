@@ -17,6 +17,7 @@ use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
+use Pico\Parsers\RegExpParser;
 use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\StringParser;
@@ -194,6 +195,16 @@ final class Pico
     public static function repeat(Parser $parser, int $min = 0, int $max = PHP_INT_MAX): Parser
     {
         return new RepeatParser($parser, $min, $max);
+    }
+
+    /**
+     * Creates a parser that matches a regular expression at the current input offset.
+     *
+     * @return Parser<string>
+     */
+    public static function regexp(string $pattern): Parser
+    {
+        return new RegExpParser($pattern);
     }
 
     /**

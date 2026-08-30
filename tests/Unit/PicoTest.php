@@ -13,6 +13,7 @@ use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
+use Pico\Parsers\RegExpParser;
 use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\StringParser;
@@ -270,6 +271,24 @@ describe('Pico::repeat()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf(['A', 'A'], 2);
+    });
+});
+
+describe('Pico::regexp()', function (): void {
+    it('should return a RegExpParser instance', function (): void {
+        // Act
+        $actual = Pico::regexp('[A-Z]+');
+
+        // Assert
+        expect($actual)->toBeInstanceOf(RegExpParser::class);
+    });
+
+    it('should parse the given regular expression', function (): void {
+        // Act
+        $actual = Pico::regexp('[A-Z]+')->parse('ABC123');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('ABC', 3);
     });
 });
 
