@@ -217,4 +217,14 @@ final class Pico
     {
         return new StringParser($expected);
     }
+
+    /**
+     * Creates a parser that matches any ASCII whitespace character.
+     *
+     * @return Parser<string>
+     */
+    public static function whitespace(): Parser
+    {
+        return self::createAsciiParser('whitespace', ctype_space(...));
+    }
 }

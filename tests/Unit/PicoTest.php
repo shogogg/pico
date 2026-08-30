@@ -308,3 +308,36 @@ describe('Pico::string()', function (): void {
         expect($actual)->toBeSuccessOf('AB', 2);
     });
 });
+
+describe('Pico::whitespace()', function (): void {
+    it('should return a PredicateParser instance', function (): void {
+        // Act
+        $actual = Pico::whitespace();
+
+        // Assert
+        expect($actual)->toBeInstanceOf(PredicateParser::class);
+    });
+
+    it('should parse an ASCII whitespace character', function (string $input, string $expected): void {
+        // Act
+        $actual = Pico::whitespace()->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessOf($expected, 1);
+    })->with([
+        [' ABC', ' '],
+        ["\tABC", "\t"],
+        ["\nABC", "\n"],
+    ]);
+
+    it('should fail for a character outside the ASCII whitespace characters', function (string $input): void {
+        // Act
+        $actual = Pico::whitespace()->parse($input);
+
+        // Assert
+        expect($actual)->toBeFailure();
+    })->with([
+        'ABC',
+        '　ABC',
+    ]);
+});
