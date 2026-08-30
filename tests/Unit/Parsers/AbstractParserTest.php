@@ -18,7 +18,7 @@ use function Pico\Parsers\success;
 describe('AbstractParser::parse', function (): void {
     it('should delegate parsing from the start of the input', function (): void {
         // Arrange
-        $parser = new readonly class () extends AbstractParser {
+        $parser = new class () extends AbstractParser {
             public function parseInput(ParserInput $input): ParserResult
             {
                 return success($input->current(), 1);
@@ -34,7 +34,7 @@ describe('AbstractParser::parse', function (): void {
 
     it('should propagate a ParserInput exception', function (): void {
         // Arrange
-        $parser = new readonly class () extends AbstractParser {
+        $parser = new class () extends AbstractParser {
             public function parseInput(ParserInput $input): ParserResult
             {
                 return success($input->current(), 1);
@@ -52,7 +52,7 @@ describe('AbstractParser::parse', function (): void {
 describe('AbstractParser::map', function (): void {
     it('should return a MapParser instance', function (): void {
         // Arrange
-        $parser = new readonly class () extends AbstractParser {
+        $parser = new class () extends AbstractParser {
             public function parseInput(ParserInput $input): ParserResult
             {
                 return success($input->current(), 1);

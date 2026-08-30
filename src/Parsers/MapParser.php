@@ -21,13 +21,13 @@ use Pico\Exceptions\ParserException;
  * @template U
  * @extends AbstractParser<U>
  */
-final readonly class MapParser extends AbstractParser
+final class MapParser extends AbstractParser
 {
     /** @var ContextualParser<T> */
-    private ContextualParser $parser;
+    private readonly ContextualParser $parser;
 
     /** @var Closure(T): U */
-    private Closure $fn;
+    private readonly Closure $fn;
 
     /**
      * {@see MapParser} constructor.

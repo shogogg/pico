@@ -10,6 +10,7 @@ declare(strict_types=1);
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
+use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RepeatParser;
@@ -198,6 +199,24 @@ describe('Pico::digit()', function (): void {
         'abc',
         '１２3',
     ]);
+});
+
+describe('Pico::lazy()', function (): void {
+    it('should return a LazyParser instance', function (): void {
+        // Act
+        $actual = Pico::lazy(static fn (): CharParser => new CharParser('A'));
+
+        // Assert
+        expect($actual)->toBeInstanceOf(LazyParser::class);
+    });
+
+    it('should parse the parser returned by the factory', function (): void {
+        // Act
+        $actual = Pico::lazy(static fn (): CharParser => new CharParser('A'))->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('A', 1);
+    });
 });
 
 describe('Pico::optional()', function (): void {

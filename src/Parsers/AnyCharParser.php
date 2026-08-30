@@ -16,7 +16,7 @@ use Pico\Contracts\ParserResult;
  *
  * @extends AbstractParser<string>
  */
-final readonly class AnyCharParser extends AbstractParser
+final class AnyCharParser extends AbstractParser
 {
     /** {@inheritDoc} */
     public function parseInput(ParserInput $input): ParserResult

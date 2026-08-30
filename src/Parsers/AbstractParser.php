@@ -20,7 +20,7 @@ use Pico\Contracts\ParserResult;
  * @implements Parser<T>
  * @implements ContextualParser<T>
  */
-abstract readonly class AbstractParser implements Parser, ContextualParser
+abstract class AbstractParser implements Parser, ContextualParser
 {
     /** {@inheritDoc} */
     final public function parse(string $input): ParserResult

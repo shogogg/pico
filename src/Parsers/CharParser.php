@@ -17,13 +17,13 @@ use Pico\Exceptions\ParserException;
  *
  * @extends AbstractParser<string>
  */
-final readonly class CharParser extends AbstractParser
+final class CharParser extends AbstractParser
 {
     /**
      * {@see CharParser} constructor.
      */
     public function __construct(
-        private string $char,
+        private readonly string $char,
     ) {
         if (mb_strlen($this->char) !== 1) {
             throw new ParserException('The character must be exactly one character long.');

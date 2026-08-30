@@ -19,10 +19,10 @@ use Pico\Exceptions\ParserException;
  * @template T
  * @extends AbstractParser<T>
  */
-final readonly class AnyOfParser extends AbstractParser
+final class AnyOfParser extends AbstractParser
 {
     /** @var list<ContextualParser<T>> */
-    private array $parsers;
+    private readonly array $parsers;
 
     /**
      * {@see AnyOfParser} constructor.

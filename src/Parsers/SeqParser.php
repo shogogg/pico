@@ -19,10 +19,10 @@ use Pico\Exceptions\ParserException;
  * @template T
  * @extends AbstractParser<list<T>>
  */
-final readonly class SeqParser extends AbstractParser
+final class SeqParser extends AbstractParser
 {
     /** @var list<ContextualParser<T>> */
-    private array $parsers;
+    private readonly array $parsers;
 
     /**
      * {@see SeqParser} constructor.

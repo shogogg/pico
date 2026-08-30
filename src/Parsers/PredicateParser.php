@@ -17,7 +17,7 @@ use Pico\Contracts\ParserResult;
  *
  * @extends AbstractParser<string>
  */
-final readonly class PredicateParser extends AbstractParser
+final class PredicateParser extends AbstractParser
 {
     /**
      * {@see PredicateParser} constructor.
@@ -25,7 +25,7 @@ final readonly class PredicateParser extends AbstractParser
      * @param Closure(string): bool $predicate
      */
     public function __construct(
-        private Closure $predicate,
+        private readonly Closure $predicate,
     ) {
     }
 

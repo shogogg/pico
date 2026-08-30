@@ -14,6 +14,7 @@ use Pico\Contracts\Parser;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\CharParser;
+use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RepeatParser;
@@ -146,6 +147,18 @@ final class Pico
     public static function digit(): Parser
     {
         return self::createAsciiParser('digit', ctype_digit(...));
+    }
+
+    /**
+     * Creates a parser that defers constructing a parser until parsing.
+     *
+     * @template T
+     * @param Closure(): Parser<T> $factory
+     * @return Parser<T>
+     */
+    public static function lazy(Closure $factory): Parser
+    {
+        return new LazyParser($factory);
     }
 
     /**

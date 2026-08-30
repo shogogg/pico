@@ -19,17 +19,17 @@ use Pico\Exceptions\ParserException;
  * @template T
  * @extends AbstractParser<list<T>>
  */
-final readonly class RepeatParser extends AbstractParser
+final class RepeatParser extends AbstractParser
 {
     /** @var ContextualParser<T> */
-    private ContextualParser $parser;
+    private readonly ContextualParser $parser;
 
     /**
      * {@see RepeatParser} constructor.
      *
      * @param Parser<T> $parser
      */
-    public function __construct(Parser $parser, private int $min = 0, private int $max = PHP_INT_MAX)
+    public function __construct(Parser $parser, private readonly int $min = 0, private readonly int $max = PHP_INT_MAX)
     {
         if (!($parser instanceof ContextualParser)) {
             throw new ParserException('The parser must implement ContextualParser.');

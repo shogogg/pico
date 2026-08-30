@@ -16,15 +16,15 @@ use Pico\Contracts\ParserResult;
  *
  * @extends AbstractParser<string>
  */
-final readonly class StringParser extends AbstractParser
+final class StringParser extends AbstractParser
 {
-    private int $length;
+    private readonly int $length;
 
     /**
      * {@see StringParser} constructor.
      */
     public function __construct(
-        public string $expected,
+        public readonly string $expected,
     ) {
         $this->length = mb_strlen($this->expected, 'UTF-8');
     }
