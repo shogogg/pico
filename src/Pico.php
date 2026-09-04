@@ -20,6 +20,7 @@ use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\RepeatParser;
+use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\StringParser;
 
@@ -222,6 +223,20 @@ final class Pico
     public static function regexp(string $pattern): Parser
     {
         return new RegExpParser($pattern);
+    }
+
+    /**
+     * Creates a parser that matches content separated by another parser.
+     *
+     * @template TContent
+     * @template TSeparator
+     * @param Parser<TContent> $content
+     * @param Parser<TSeparator> $separator
+     * @return Parser<list<TContent>>
+     */
+    public static function sepBy(Parser $content, Parser $separator, int $min = 0): Parser
+    {
+        return new SepByParser($content, $separator, $min);
     }
 
     /**

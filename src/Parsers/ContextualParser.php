@@ -15,7 +15,7 @@ use Pico\Exceptions\ParserInputException;
 /**
  * Contract for parsers that parse a ParserInput.
  *
- * @template T
+ * @template-covariant T
  * @internal
  */
 interface ContextualParser

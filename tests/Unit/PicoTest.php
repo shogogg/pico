@@ -16,6 +16,7 @@ use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\RepeatParser;
+use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\StringParser;
 use Pico\Pico;
@@ -316,6 +317,24 @@ describe('Pico::regexp()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf('ABC', 3);
+    });
+});
+
+describe('Pico::sepBy()', function (): void {
+    it('should return a SepByParser instance', function (): void {
+        // Act
+        $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','));
+
+        // Assert
+        expect($actual)->toBeInstanceOf(SepByParser::class);
+    });
+
+    it('should parse content separated by the given parser', function (): void {
+        // Act
+        $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','))->parse('1,22,333x');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['1', '22', '333'], 8);
     });
 });
 
