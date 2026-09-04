@@ -36,11 +36,8 @@ final class ExceptParser extends AbstractParser
      */
     public function __construct(Parser $parser, Parser $except)
     {
-        PicoInternal::ensureContextualParser($parser);
-        PicoInternal::ensureContextualParser($except);
-
-        $this->except = $except;
-        $this->parser = $parser;
+        $this->except = PicoInternal::asContextualParser($except);
+        $this->parser = PicoInternal::asContextualParser($parser);
     }
 
     /** {@inheritDoc} */

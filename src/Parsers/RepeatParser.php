@@ -32,17 +32,13 @@ final class RepeatParser extends AbstractParser
      */
     public function __construct(Parser $parser, private readonly int $min = 0, private readonly int $max = PHP_INT_MAX)
     {
-        PicoInternal::ensureContextualParser($parser);
-
         if ($this->min < 0) {
             throw new ParserException('The minimum repetition count must not be negative.');
         }
-
         if ($this->max < $this->min) {
             throw new ParserException('The maximum repetition count must be at least the minimum repetition count.');
         }
-
-        $this->parser = $parser;
+        $this->parser = PicoInternal::asContextualParser($parser);
     }
 
     /**

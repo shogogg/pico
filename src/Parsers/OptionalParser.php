@@ -31,9 +31,7 @@ final class OptionalParser extends AbstractParser
      */
     public function __construct(Parser $parser)
     {
-        PicoInternal::ensureContextualParser($parser);
-
-        $this->parser = $parser;
+        $this->parser = PicoInternal::asContextualParser($parser);
     }
 
     /**

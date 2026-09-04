@@ -53,8 +53,6 @@ final class LazyParser extends AbstractParser
 
         $parser = ($this->factory)();
 
-        PicoInternal::ensureContextualParser($parser);
-
-        return $this->parser = $parser;
+        return $this->parser = PicoInternal::asContextualParser($parser);
     }
 }

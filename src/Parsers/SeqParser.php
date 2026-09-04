@@ -34,9 +34,7 @@ final class SeqParser extends AbstractParser
         $contextualParsers = [];
 
         foreach ($parsers as $parser) {
-            PicoInternal::ensureContextualParser($parser);
-
-            $contextualParsers[] = $parser;
+            $contextualParsers[] = PicoInternal::asContextualParser($parser);
         }
 
         $this->parsers = $contextualParsers;

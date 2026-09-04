@@ -41,13 +41,9 @@ final class BetweenParser extends AbstractParser
      */
     public function __construct(Parser $open, Parser $close, Parser $content)
     {
-        PicoInternal::ensureContextualParser($open);
-        PicoInternal::ensureContextualParser($close);
-        PicoInternal::ensureContextualParser($content);
-
-        $this->open = $open;
-        $this->close = $close;
-        $this->content = $content;
+        $this->open = PicoInternal::asContextualParser($open);
+        $this->close = PicoInternal::asContextualParser($close);
+        $this->content = PicoInternal::asContextualParser($content);
     }
 
     /**

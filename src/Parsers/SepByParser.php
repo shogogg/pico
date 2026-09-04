@@ -41,11 +41,8 @@ final class SepByParser extends AbstractParser
             throw new ParserException('The minimum item count must not be negative.');
         }
 
-        PicoInternal::ensureContextualParser($content);
-        PicoInternal::ensureContextualParser($separator);
-
-        $this->content = $content;
-        $this->separator = $separator;
+        $this->content = PicoInternal::asContextualParser($content);
+        $this->separator = PicoInternal::asContextualParser($separator);
     }
 
     /**
