@@ -35,9 +35,13 @@ describe('Rfc5322EmailParser::address', function (): void {
             '!#$%&\'*+-/=?^_`{|}~@example.com',
             ['local_part' => '!#$%&\'*+-/=?^_`{|}~', 'domain' => 'example.com'],
         ],
-        'quoted local part' => [
+        'quoted local part with FWS' => [
             '"quoted local"@example.com',
             ['local_part' => 'quoted local', 'domain' => 'example.com'],
+        ],
+        'quoted local part with folded FWS' => [
+            "\"quoted\r\n local\"@example.com",
+            ['local_part' => "quoted\r\n local", 'domain' => 'example.com'],
         ],
         'escaped character in quoted local part' => [
             '"foo\\"bar"@example.com',
@@ -59,6 +63,7 @@ describe('Rfc5322EmailParser::address', function (): void {
         'missing local part' => '@example.com',
         'leading dot in local part' => '.first@example.com',
         'unterminated quoted local part' => '"foo@example.com',
+        'FWS without whitespace after line break' => "\"foo\r\nbar\"@example.com",
         'consecutive dots in local part' => 'first..last@example.com',
         'missing domain' => 'first.last@',
         'first last@example.com',

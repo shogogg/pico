@@ -56,19 +56,40 @@ final class Rfc5322EmailParser
 
         $dotAtom = Pico::sepBy($atom, Pico::char('.'), min: 1)->join('.');
 
-        $qtext = Pico::predicate(static fn (string $char): bool => strlen($char) === 1
-            && ord($char) >= 0x20
-            && ord($char) <= 0x7e
-            && $char !== '"'
-            && $char !== '\\');
+        $wsp = Pico::anyOf(Pico::char(' '), Pico::char("\t"));
+
+        $fws = Pico::anyOf(
+            Pico::seq(
+                Pico::repeat($wsp)->join(),
+                Pico::string("\r\n"),
+                Pico::repeat($wsp, min: 1)->join(),
+            )->join(),
+            Pico::repeat($wsp, min: 1)->join(),
+        );
+
+        $qtext = Pico::anyOf(
+            Pico::char(chr(33)),            // %d33 ('!')
+            Pico::range(chr(35), chr(91)),  // %d35-91 ('#' から '[')
+            Pico::range(chr(93), chr(126)), // %d93-126 (']' から '~')
+        );
 
         $quotedPair = Pico::seq(Pico::char('\\'), Pico::anyChar())
             ->map(static fn (array $parts): string => $parts[1]);
 
+        $qcontent = Pico::anyOf($qtext, $quotedPair);
+
         $quotedString = Pico::between(
             Pico::char('"'),
             Pico::char('"'),
-            Pico::repeat(Pico::anyOf($qtext, $quotedPair))->join(),
+            Pico::seq(
+                Pico::repeat(
+                    Pico::seq(
+                        Pico::optional($fws)->map(static fn (?string $value): string => $value ?? ''),
+                        $qcontent,
+                    )->join(),
+                )->join(),
+                Pico::optional($fws)->map(static fn (?string $value): string => $value ?? ''),
+            )->join(),
         );
 
         $localPart = Pico::anyOf($dotAtom, $quotedString);
