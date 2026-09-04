@@ -36,7 +36,31 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function map(Closure $fn): Parser
     {
-        return new MapParser($this, $fn);
+        return new class ($this, $fn) extends AbstractParser {
+            /** @var Closure(T): U */
+            private readonly Closure $fn;
+
+            /** @var ContextualParser<T> */
+            private readonly ContextualParser $parser;
+
+            /**
+             * @param ContextualParser<T> $parser
+             * @param Closure(T): U $fn
+             */
+            public function __construct(ContextualParser $parser, Closure $fn)
+            {
+                $this->parser = $parser;
+                $this->fn = $fn;
+            }
+
+            /**
+             * @return ParserResult<U>
+             */
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return $this->parser->parseInput($input)->map($this->fn);
+            }
+        };
     }
 
     /** {@inheritDoc} */

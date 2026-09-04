@@ -11,7 +11,7 @@ use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserInputException;
 use Pico\Exceptions\ParserException;
 use Pico\Parsers\AbstractParser;
-use Pico\Parsers\MapParser;
+use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 
 use function Pico\Parsers\success;
@@ -51,20 +51,30 @@ describe('AbstractParser::parse', function (): void {
 });
 
 describe('AbstractParser::map', function (): void {
-    it('should return a MapParser instance', function (): void {
-        // Arrange
-        $parser = new class () extends AbstractParser {
-            public function parseInput(ParserInput $input): ParserResult
-            {
-                return success($input->current(), 1);
-            }
-        };
-
+    it('should transform a successful output', function (): void {
         // Act
-        $actual = $parser->map(static fn (string $char): string => strtoupper($char));
+        $actual = (new CharParser('a'))
+            ->map(static fn (string $char): string => strtoupper($char))
+            ->parse('abc');
 
         // Assert
-        expect($actual)->toBeInstanceOf(MapParser::class);
+        expect($actual)->toBeSuccessOf('A', 1);
+    });
+
+    it('should not transform a failed output', function (): void {
+        // Arrange
+        $wasCalled = false;
+        $parser = (new CharParser('A'))->map(function (string $char) use (&$wasCalled): string {
+            $wasCalled = true;
+
+            return $char;
+        });
+
+        // Act
+        $parser->parse('B');
+
+        // Assert
+        expect($wasCalled)->toBeFalse();
     });
 });
 
