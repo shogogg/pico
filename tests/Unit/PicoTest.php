@@ -14,6 +14,7 @@ use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
+use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SepByParser;
@@ -281,6 +282,60 @@ describe('Pico::predicate()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf('x', 1);
+    });
+});
+
+describe('Pico::range()', function (): void {
+    it('should return a RangeParser instance', function (): void {
+        // Act
+        $actual = Pico::range('あ', 'お');
+
+        // Assert
+        expect($actual)->toBeInstanceOf(RangeParser::class);
+    });
+
+    it('should parse a character within the range', function (string $input, string $expected): void {
+        // Act
+        $actual = Pico::range('あ', 'お')->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessOf($expected, 1);
+    })->with([
+        'range start' => ['あいう', 'あ'],
+        'range middle' => ['えお', 'え'],
+        'range end' => ['おかき', 'お'],
+    ]);
+
+    it('should fail for a character outside the range', function (string $input): void {
+        // Act
+        $actual = Pico::range('あ', 'お')->parse($input);
+
+        // Assert
+        expect($actual)->toBeFailure();
+    })->with([
+        'ASCII character' => 'apple',
+        'before range' => 'ぁいう',
+        'after range' => 'かきく',
+    ]);
+
+    it('should reject bounds that are not exactly one UTF-8 character', function (string $from, string $to): void {
+        // Act
+        $action = static fn (): \Pico\Contracts\Parser => Pico::range($from, $to);
+
+        // Assert
+        expect($action)->toThrow(\Pico\Exceptions\ParserException::class, 'Range bounds must be exactly one UTF-8 character.');
+    })->with([
+        'empty start' => ['', 'z'],
+        'multiple-character start' => ['ab', 'z'],
+        'multiple-character UTF-8 end' => ['a', 'あい'],
+    ]);
+
+    it('should reject a range whose start exceeds its end', function (): void {
+        // Act
+        $action = static fn (): \Pico\Contracts\Parser => Pico::range('z', 'a');
+
+        // Assert
+        expect($action)->toThrow(\Pico\Exceptions\ParserException::class, 'The range start must not exceed the range end.');
     });
 });
 

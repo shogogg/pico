@@ -18,6 +18,7 @@ use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
+use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SepByParser;
@@ -201,6 +202,17 @@ final class Pico
     public static function predicate(Closure $predicate): Parser
     {
         return new PredicateParser($predicate);
+    }
+
+    /**
+     * Creates a parser that matches a character within the given Unicode code point range.
+     *
+     * @return Parser<string>
+     * @throws \Pico\Exceptions\ParserException When either bound is not one UTF-8 character or the range is invalid.
+     */
+    public static function range(string $from, string $to): Parser
+    {
+        return new RangeParser($from, $to);
     }
 
     /**
