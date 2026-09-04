@@ -80,3 +80,58 @@ describe('PicoInternal::ensureContextualParser()', function (): void {
         expect($actual)->toBeSuccessOf('a', 1);
     });
 });
+
+describe('PicoInternal::asContextualParser()', function (): void {
+    it('should throw an exception containing the class name for a non-contextual parser', function (): void {
+        // Arrange
+        $parser = new class () implements Parser {
+            public function parse(string $input): ParserResult
+            {
+                return Failure::getInstance();
+            }
+
+            public function except(Parser $except): Parser
+            {
+                return $this;
+            }
+
+            public function map(\Closure $fn): Parser
+            {
+                return $this;
+            }
+
+            public function join(string $separator = ''): Parser
+            {
+                return $this;
+            }
+        };
+        /**
+         * @template T
+         * @param Parser<T> $candidate
+         * @return \Pico\Parsers\ContextualParser<T>
+         */
+        $asContextualParser = static function (Parser $candidate): \Pico\Parsers\ContextualParser {
+            return PicoInternal::asContextualParser($candidate);
+        };
+
+        // Act
+        $action = static function () use ($asContextualParser, $parser): \Pico\Parsers\ContextualParser {
+            return $asContextualParser($parser);
+        };
+        $message = $parser::class . ' is not a ContextualParser';
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, $message);
+    });
+
+    it('should return the same contextual parser instance', function (): void {
+        // Arrange
+        $parser = new CharParser('a');
+
+        // Act
+        $actual = PicoInternal::asContextualParser($parser);
+
+        // Assert
+        expect($actual)->toBe($parser);
+    });
+});

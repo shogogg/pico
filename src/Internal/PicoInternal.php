@@ -29,6 +29,21 @@ final class PicoInternal
     }
 
     /**
+     * Returns the parser as a ContextualParser.
+     *
+     * @template T
+     * @param Parser<T> $parser
+     * @return ContextualParser<T>
+     * @throws ParserException When the parser does not implement ContextualParser.
+     * @internal
+     */
+    public static function asContextualParser(Parser $parser): ContextualParser
+    {
+        self::ensureContextualParser($parser);
+        return $parser;
+    }
+
+    /**
      * Ensures that the parser supports parsing from a ParserInput.
      *
      * @template T
