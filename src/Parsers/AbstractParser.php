@@ -12,6 +12,7 @@ namespace Pico\Parsers;
 use Closure;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
+use Pico\Success;
 
 /**
  * Base class for parsers that operate on a ParserInput.
@@ -36,6 +37,12 @@ abstract class AbstractParser implements Parser, ContextualParser
     final public function map(Closure $fn): Parser
     {
         return new MapParser($this, $fn);
+    }
+
+    /** {@inheritDoc} */
+    final public function join(string $separator = ''): Parser
+    {
+        return $this->map(static fn (mixed $value): string => success($value, 0)->join($separator)->output());
     }
 
     /** {@inheritDoc} */

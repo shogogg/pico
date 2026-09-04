@@ -71,4 +71,10 @@ final readonly class Failure implements ParserResult
     {
         return $this;
     }
+
+    /** {@inheritDoc} */
+    public function join(string $separator = ''): ParserResult
+    {
+        return $this;
+    }
 }

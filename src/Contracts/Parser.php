@@ -36,4 +36,11 @@ interface Parser
      * @return Parser<U>
      */
     public function map(Closure $fn): Parser;
+
+    /**
+     * Joins the output into a string.
+     *
+     * @return Parser<string>
+     */
+    public function join(string $separator = ''): Parser;
 }

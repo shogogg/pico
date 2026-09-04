@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserInputException;
+use Pico\Exceptions\ParserException;
 use Pico\Parsers\AbstractParser;
 use Pico\Parsers\MapParser;
 use Pico\Parsers\ParserInput;
@@ -64,5 +65,77 @@ describe('AbstractParser::map', function (): void {
 
         // Assert
         expect($actual)->toBeInstanceOf(MapParser::class);
+    });
+});
+
+describe('AbstractParser::join', function (): void {
+    it('should join an array output with the separator', function (): void {
+        // Act
+        $actual = (new class () extends AbstractParser {
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return success(['first', 3], 0);
+            }
+        })->join(', ')->parse('');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('first, 3', 0);
+    });
+
+    it('should stringify a scalar output', function (): void {
+        // Act
+        $actual = (new class () extends AbstractParser {
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return success(42, 0);
+            }
+        })->join()->parse('');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('42', 0);
+    });
+
+    it('should stringify a Stringable output', function (): void {
+        // Act
+        $actual = (new class () extends AbstractParser {
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return success(new class () implements \Stringable {
+                    public function __toString(): string
+                    {
+                        return 'stringable';
+                    }
+                }, 0);
+            }
+        })->join()->parse('');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('stringable', 0);
+    });
+
+    it('should throw when an array output contains a non-stringable value', function (): void {
+        // Act
+        $action = static fn (): ParserResult => (new class () extends AbstractParser {
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return success(['first', new \stdClass()], 0);
+            }
+        })->join()->parse('');
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'The value must be a scalar or implement Stringable.');
+    });
+
+    it('should throw when a non-array output cannot be stringified', function (): void {
+        // Act
+        $action = static fn (): ParserResult => (new class () extends AbstractParser {
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return success(null, 0);
+            }
+        })->join()->parse('');
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'The value must be a scalar or implement Stringable.');
     });
 });

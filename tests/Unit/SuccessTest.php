@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 use Pico\Success;
+use Pico\Exceptions\ParserException;
 
 describe('::of', function (): void {
     it('should returns a new instance of Success', function (): void {
@@ -59,5 +60,52 @@ describe('->map()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf(3, 5);
+    });
+});
+
+describe('->join()', function (): void {
+    it('should join an array output and preserve the consumed length', function (): void {
+        // Act
+        $actual = Success::of(['first', 3], 5)->join(', ');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('first, 3', 5);
+    });
+
+    it('should stringify a scalar output', function (): void {
+        // Act
+        $actual = Success::of(42, 5)->join();
+
+        // Assert
+        expect($actual)->toBeSuccessOf('42', 5);
+    });
+
+    it('should stringify a Stringable output', function (): void {
+        // Act
+        $actual = Success::of(new class () implements \Stringable {
+            public function __toString(): string
+            {
+                return 'stringable';
+            }
+        }, 5)->join();
+
+        // Assert
+        expect($actual)->toBeSuccessOf('stringable', 5);
+    });
+
+    it('should throw when an array output contains a non-stringable value', function (): void {
+        // Act
+        $action = static fn () => Success::of(['first', new \stdClass()], 5)->join();
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'The value must be a scalar or implement Stringable.');
+    });
+
+    it('should throw when a non-array output cannot be stringified', function (): void {
+        // Act
+        $action = static fn () => Success::of(null, 5)->join();
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'The value must be a scalar or implement Stringable.');
     });
 });

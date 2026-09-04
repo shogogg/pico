@@ -11,6 +11,7 @@ namespace Pico;
 
 use Closure;
 use Pico\Contracts\ParserResult;
+use Pico\Exceptions\ParserException;
 
 /**
  * Successful parsing result.
@@ -77,5 +78,26 @@ final readonly class Success implements ParserResult
     public function map(Closure $fn): ParserResult
     {
         return self::of(($fn)($this->output), $this->consumedLength);
+    }
+
+    /** {@inheritDoc} */
+    public function join(string $separator = ''): ParserResult
+    {
+        $output = is_array($this->output)
+            ? implode($separator, array_map(self::stringify(...), $this->output))
+            : self::stringify($this->output);
+
+        return self::of($output, $this->consumedLength);
+    }
+
+    /**
+     * @throws ParserException When the value cannot be converted to a string.
+     */
+    private static function stringify(mixed $value): string
+    {
+        if (is_scalar($value) || $value instanceof \Stringable) {
+            return (string)$value;
+        }
+        throw new ParserException('The value must be a scalar or implement Stringable.');
     }
 }

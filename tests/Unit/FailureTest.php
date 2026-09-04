@@ -78,3 +78,16 @@ describe('->map()', function (): void {
         expect($wasCalled)->toBeFalse();
     });
 });
+
+describe('->join()', function (): void {
+    it('should return itself', function (): void {
+        // Arrange
+        $failure = Failure::getInstance();
+
+        // Act
+        $actual = $failure->join();
+
+        // Assert
+        expect($actual)->toBe($failure);
+    });
+});
