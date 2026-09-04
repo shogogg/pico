@@ -15,6 +15,7 @@ use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
+use Pico\Parsers\ContextualParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
@@ -24,6 +25,7 @@ use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\StringParser;
+use Pico\Exceptions\ParserException;
 
 /**
  * Parser factory facade.
@@ -170,6 +172,23 @@ final class Pico
     }
 
     /**
+     * Ensures that the parser supports parsing from a ParserInput.
+     *
+     * @template T
+     * @param Parser<T> $parser
+     * @phpstan-assert ContextualParser<T> $parser
+     * @psalm-assert ContextualParser<T> $parser
+     * @throws ParserException When the parser does not implement ContextualParser.
+     */
+    public static function ensureContextualParser(Parser $parser): void
+    {
+        if (!($parser instanceof ContextualParser)) {
+            $className = $parser::class;
+            throw new ParserException($className . ' is not a ContextualParser');
+        }
+    }
+
+    /**
      * Creates a parser that defers constructing a parser until parsing.
      *
      * @template T
@@ -208,7 +227,7 @@ final class Pico
      * Creates a parser that matches a character within the given Unicode code point range.
      *
      * @return Parser<string>
-     * @throws \Pico\Exceptions\ParserException When either bound is not one UTF-8 character or the range is invalid.
+     * @throws ParserException When either bound is not one UTF-8 character or the range is invalid.
      */
     public static function range(string $from, string $to): Parser
     {
