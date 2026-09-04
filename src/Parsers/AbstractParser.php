@@ -12,7 +12,6 @@ namespace Pico\Parsers;
 use Closure;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
-use Pico\Success;
 
 /**
  * Base class for parsers that operate on a ParserInput.
@@ -36,8 +35,26 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function map(Closure $fn): Parser
     {
+        return $this->transformResult(static fn (ParserResult $result): ParserResult => $result->map($fn));
+    }
+
+    /** {@inheritDoc} */
+    final public function join(string $separator = ''): Parser
+    {
+        return $this->transformResult(static fn (ParserResult $result): ParserResult => $result->join($separator));
+    }
+
+    /** {@inheritDoc} */
+    abstract public function parseInput(ParserInput $input): ParserResult;
+
+    /**
+     * @template U
+     * @param Closure(ParserResult<T>): ParserResult<U> $fn
+     * @return Parser<U>
+     */
+    private function transformResult(Closure $fn): Parser
+    {
         return new class ($this, $fn) extends AbstractParser {
-            /** @var Closure(T): U */
             private readonly Closure $fn;
 
             /** @var ContextualParser<T> */
@@ -45,7 +62,7 @@ abstract class AbstractParser implements Parser, ContextualParser
 
             /**
              * @param ContextualParser<T> $parser
-             * @param Closure(T): U $fn
+             * @param Closure(ParserResult<T>): ParserResult<U> $fn
              */
             public function __construct(ContextualParser $parser, Closure $fn)
             {
@@ -58,17 +75,8 @@ abstract class AbstractParser implements Parser, ContextualParser
              */
             public function parseInput(ParserInput $input): ParserResult
             {
-                return $this->parser->parseInput($input)->map($this->fn);
+                return ($this->fn)($this->parser->parseInput($input));
             }
         };
     }
-
-    /** {@inheritDoc} */
-    final public function join(string $separator = ''): Parser
-    {
-        return $this->map(static fn (mixed $value): string => success($value, 0)->join($separator)->output());
-    }
-
-    /** {@inheritDoc} */
-    abstract public function parseInput(ParserInput $input): ParserResult;
 }
