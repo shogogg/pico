@@ -29,6 +29,16 @@ abstract class AbstractParser implements Parser, ContextualParser
     }
 
     /**
+     * @template TExcept
+     * @param Parser<TExcept> $except
+     * @return Parser<T>
+     */
+    final public function except(Parser $except): Parser
+    {
+        return new ExceptParser($this, $except);
+    }
+
+    /**
      * @template U
      * @param Closure(T): U $fn
      * @return Parser<U>

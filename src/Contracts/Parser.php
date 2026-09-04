@@ -29,13 +29,13 @@ interface Parser
     public function parse(string $input): ParserResult;
 
     /**
-     * Transforms the output of a successful parse.
+     * Parses this parser unless the exclusion parser succeeds.
      *
-     * @template U
-     * @param Closure(T): U $fn
-     * @return Parser<U>
+     * @template TExcept
+     * @param Parser<TExcept> $except
+     * @return Parser<T>
      */
-    public function map(Closure $fn): Parser;
+    public function except(Parser $except): Parser;
 
     /**
      * Joins the output into a string.
@@ -43,4 +43,13 @@ interface Parser
      * @return Parser<string>
      */
     public function join(string $separator = ''): Parser;
+
+    /**
+     * Transforms the output of a successful parse.
+     *
+     * @template U
+     * @param Closure(T): U $fn
+     * @return Parser<U>
+     */
+    public function map(Closure $fn): Parser;
 }
