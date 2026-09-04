@@ -12,6 +12,7 @@ namespace Pico\Parsers;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 
 /**
  * Parser that matches content separated by another parser.
@@ -40,9 +41,8 @@ final class SepByParser extends AbstractParser
             throw new ParserException('The minimum item count must not be negative.');
         }
 
-        if (!($content instanceof ContextualParser) || !($separator instanceof ContextualParser)) {
-            throw new ParserException('All parsers must implement ContextualParser.');
-        }
+        PicoInternal::ensureContextualParser($content);
+        PicoInternal::ensureContextualParser($separator);
 
         $this->content = $content;
         $this->separator = $separator;

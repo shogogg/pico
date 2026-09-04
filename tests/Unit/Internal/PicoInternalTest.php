@@ -1,0 +1,82 @@
+<?php
+/*
+ * Copyright (c) 2026 shogogg <shogo@studiofly.net>.
+ *
+ * This software is released under the MIT License.
+ * http://opensource.org/licenses/mit-license.php
+ */
+declare(strict_types=1);
+
+use Pico\Contracts\Parser;
+use Pico\Contracts\ParserResult;
+use Pico\Exceptions\ParserException;
+use Pico\Failure;
+use Pico\Internal\PicoInternal;
+use Pico\Parsers\CharParser;
+use Pico\Parsers\ParserInput;
+
+describe('PicoInternal::ensureContextualParser()', function (): void {
+    it('should throw an exception containing the class name for a non-contextual parser', function (): void {
+        // Arrange
+        $parser = new class () implements Parser {
+            public function parse(string $input): ParserResult
+            {
+                return Failure::getInstance();
+            }
+
+            public function except(Parser $except): Parser
+            {
+                return $this;
+            }
+
+            public function map(\Closure $fn): Parser
+            {
+                return $this;
+            }
+
+            public function join(string $separator = ''): Parser
+            {
+                return $this;
+            }
+        };
+        /**
+         * @template T
+         * @param Parser<T> $candidate
+         * @return ParserResult<T>
+         */
+        $parseInput = static function (Parser $candidate): ParserResult {
+            PicoInternal::ensureContextualParser($candidate);
+
+            return $candidate->parseInput(new ParserInput('a'));
+        };
+
+        // Act
+        $action = static function () use ($parseInput, $parser): ParserResult {
+            return $parseInput($parser);
+        };
+        $message = $parser::class . ' is not a ContextualParser';
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, $message);
+    });
+
+    it('should allow a contextual parser', function (): void {
+        // Arrange
+        /**
+         * @template T
+         * @param Parser<T> $candidate
+         * @return ParserResult<T>
+         */
+        $parseInput = static function (Parser $candidate): ParserResult {
+            PicoInternal::ensureContextualParser($candidate);
+
+            return $candidate->parseInput(new ParserInput('a'));
+        };
+
+        // Act
+        $actual = $parseInput(new CharParser('a'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf('a', 1);
+    });
+});

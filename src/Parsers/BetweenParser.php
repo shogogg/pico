@@ -11,7 +11,7 @@ namespace Pico\Parsers;
 
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
-use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 
 /**
  * Parser that matches content between opening and closing parsers.
@@ -41,11 +41,9 @@ final class BetweenParser extends AbstractParser
      */
     public function __construct(Parser $open, Parser $close, Parser $content)
     {
-        if (!($open instanceof ContextualParser)
-            || !($close instanceof ContextualParser)
-            || !($content instanceof ContextualParser)) {
-            throw new ParserException('All parsers must implement ContextualParser.');
-        }
+        PicoInternal::ensureContextualParser($open);
+        PicoInternal::ensureContextualParser($close);
+        PicoInternal::ensureContextualParser($content);
 
         $this->open = $open;
         $this->close = $close;

@@ -12,6 +12,7 @@ namespace Pico\Parsers;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 
 /**
  * Parser that repeatedly matches another parser.
@@ -31,9 +32,7 @@ final class RepeatParser extends AbstractParser
      */
     public function __construct(Parser $parser, private readonly int $min = 0, private readonly int $max = PHP_INT_MAX)
     {
-        if (!($parser instanceof ContextualParser)) {
-            throw new ParserException('The parser must implement ContextualParser.');
-        }
+        PicoInternal::ensureContextualParser($parser);
 
         if ($this->min < 0) {
             throw new ParserException('The minimum repetition count must not be negative.');

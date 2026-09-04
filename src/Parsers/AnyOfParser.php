@@ -11,7 +11,7 @@ namespace Pico\Parsers;
 
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
-use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 
 /**
  * Parser that matches the first successful parser.
@@ -31,12 +31,15 @@ final class AnyOfParser extends AbstractParser
      */
     public function __construct(Parser ...$parsers)
     {
+        $contextualParsers = [];
+
         foreach ($parsers as $parser) {
-            if (!($parser instanceof ContextualParser)) {
-                throw new ParserException('All parsers must implement ContextualParser.');
-            }
+            PicoInternal::ensureContextualParser($parser);
+
+            $contextualParsers[] = $parser;
         }
-        $this->parsers = array_values($parsers);
+
+        $this->parsers = $contextualParsers;
     }
 
     /**

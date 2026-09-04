@@ -11,7 +11,7 @@ namespace Pico\Parsers;
 
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
-use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 
 /**
  * Parser that makes another parser optional.
@@ -31,9 +31,7 @@ final class OptionalParser extends AbstractParser
      */
     public function __construct(Parser $parser)
     {
-        if (!($parser instanceof ContextualParser)) {
-            throw new ParserException('The parser must implement ContextualParser.');
-        }
+        PicoInternal::ensureContextualParser($parser);
 
         $this->parser = $parser;
     }

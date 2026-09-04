@@ -12,7 +12,7 @@ namespace Pico\Parsers;
 use Closure;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
-use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 
 /**
  * Parser that defers constructing another parser until parsing.
@@ -53,9 +53,7 @@ final class LazyParser extends AbstractParser
 
         $parser = ($this->factory)();
 
-        if (!($parser instanceof ContextualParser)) {
-            throw new ParserException('The parser must implement ContextualParser.');
-        }
+        PicoInternal::ensureContextualParser($parser);
 
         return $this->parser = $parser;
     }
