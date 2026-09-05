@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Pico\Parsers;
 
 use Pico\Contracts\ParserResult;
+use Pico\Exceptions\ParserException;
 
 /**
  * Parser that matches a specific string.
@@ -26,6 +27,10 @@ final class StringParser extends AbstractParser
     public function __construct(
         public readonly string $expected,
     ) {
+        if (!mb_check_encoding($this->expected, 'UTF-8')) {
+            throw new ParserException('The expected string must be valid UTF-8.');
+        }
+
         $this->length = mb_strlen($this->expected, 'UTF-8');
     }
 

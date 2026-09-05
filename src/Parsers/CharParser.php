@@ -25,6 +25,10 @@ final class CharParser extends AbstractParser
     public function __construct(
         private readonly string $char,
     ) {
+        if (!mb_check_encoding($this->char, 'UTF-8')) {
+            throw new ParserException('The character must be valid UTF-8.');
+        }
+
         if (mb_strlen($this->char) !== 1) {
             throw new ParserException('The character must be exactly one character long.');
         }

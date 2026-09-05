@@ -31,6 +31,10 @@ final class RangeParser extends AbstractParser
      */
     public function __construct(string $from, string $to)
     {
+        if (!mb_check_encoding($from, 'UTF-8') || !mb_check_encoding($to, 'UTF-8')) {
+            throw new ParserException('Range bounds must be valid UTF-8.');
+        }
+
         if (mb_strlen($from, 'UTF-8') !== 1 || mb_strlen($to, 'UTF-8') !== 1) {
             throw new ParserException('Range bounds must be exactly one UTF-8 character.');
         }

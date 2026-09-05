@@ -7,6 +7,7 @@
  */
 declare(strict_types=1);
 
+use Pico\Exceptions\ParserException;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\StringParser;
 
@@ -18,6 +19,13 @@ describe('StringParser', function (): void {
         // Assert
         expect($parser->expected)->toBe('abc');
     });
+
+    it('should reject an invalid UTF-8 expected string', function (string $expected): void {
+        new StringParser($expected);
+    })->with([
+        'invalid byte' => "abc\x80",
+        'incomplete multibyte character' => "abc\xE3\x81",
+    ])->throws(ParserException::class, 'The expected string must be valid UTF-8.');
 });
 
 describe('parseInput', function (): void {

@@ -12,6 +12,13 @@ use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 
 describe('CharParser', function (): void {
+    it('should reject an invalid UTF-8 character', function (string $char): void {
+        new CharParser($char);
+    })->with([
+        'invalid byte' => "\x80",
+        'incomplete multibyte character' => "\xE3\x81",
+    ])->throws(ParserException::class, 'The character must be valid UTF-8.');
+
     it('should reject a character that is not exactly one character long', function (string $char): void {
         new CharParser($char);
     })->with([

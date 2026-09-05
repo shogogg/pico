@@ -12,6 +12,15 @@ use Pico\Parsers\RangeParser;
 use Pico\Exceptions\ParserException;
 
 describe('RangeParser', function (): void {
+    it('should reject invalid UTF-8 bounds', function (string $from, string $to): void {
+        new RangeParser($from, $to);
+    })->with([
+        'invalid byte start' => ["\x80", 'z'],
+        'incomplete multibyte start' => ["\xE3\x81", 'z'],
+        'invalid byte end' => ['a', "\x80"],
+        'incomplete multibyte end' => ['a', "\xE3\x81"],
+    ])->throws(ParserException::class, 'Range bounds must be valid UTF-8.');
+
     it('should reject bounds that are not exactly one UTF-8 character', function (string $from, string $to): void {
         new RangeParser($from, $to);
     })->with([
