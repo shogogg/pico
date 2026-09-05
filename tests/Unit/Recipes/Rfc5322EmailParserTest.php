@@ -91,5 +91,8 @@ describe('Rfc5322EmailParser::address', function (): void {
         'DEL in quoted pair' => "\"foo\\" . chr(0x7f) . "bar\"@example.com",
         'backslash in domain literal' => 'user@[a\\b]',
         'unterminated domain literal' => 'user@[127.0.0.1',
+        'NUL after domain' => "user@example.com\0",
+        'trailing punctuation' => 'user@example.com.',
+        'line break without following WSP after domain' => "user@example.com\r\n",
     ]);
 });

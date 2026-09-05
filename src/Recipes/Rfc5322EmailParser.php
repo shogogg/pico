@@ -164,9 +164,11 @@ final class Rfc5322EmailParser
         $domain = Pico::anyOf($dotAtom, $domainLiteral);
 
         // addr-spec = local-part "@" domain
-        return Pico::seq($localPart, Pico::char('@'), $domain)->map(static fn (array $parts): array => [
-            'local_part' => $parts[0],
-            'domain' => $parts[2],
-        ]);
+        return Pico::seq($localPart, Pico::char('@'), $domain)
+            ->map(static fn (array $parts): array => [
+                'local_part' => $parts[0],
+                'domain' => $parts[2],
+            ])
+            ->complete();
     }
 }
