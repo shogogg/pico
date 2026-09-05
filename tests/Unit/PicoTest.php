@@ -231,6 +231,24 @@ describe('Pico::digit()', function (): void {
     ]);
 });
 
+describe('Pico::eof()', function (): void {
+    it('should match the end of input without consuming input', function (): void {
+        // Act
+        $actual = Pico::eof()->parse('');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('', 0);
+    });
+
+    it('should fail before the end of input', function (): void {
+        // Act
+        $actual = Pico::eof()->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+});
+
 describe('Pico::join()', function (): void {
     it('should join sequential parser outputs while preserving the total consumed length', function (): void {
         // Act

@@ -15,6 +15,7 @@ use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
+use Pico\Parsers\EofParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
@@ -168,6 +169,19 @@ final class Pico
     public static function digit(): Parser
     {
         return self::createAsciiParser('digit', ctype_digit(...));
+    }
+
+    /**
+     * Creates a parser that matches the end of input.
+     *
+     * @return Parser<string>
+     */
+    public static function eof(): Parser
+    {
+        return self::memoize(
+            'eof',
+            static fn (): Parser => new EofParser(),
+        );
     }
 
     /**
