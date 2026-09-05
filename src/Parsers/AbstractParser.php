@@ -23,6 +23,9 @@ use Pico\Contracts\ParserResult;
 abstract class AbstractParser implements Parser, ContextualParser
 {
     /** {@inheritDoc} */
+    abstract public function parseInput(ParserInput $input): ParserResult;
+
+    /** {@inheritDoc} */
     final public function parse(string $input): ParserResult
     {
         return $this->parseInput(new ParserInput($input));
@@ -45,39 +48,35 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function map(Closure $fn): Parser
     {
-        return $this->transformResult(static fn (ParserResult $result): ParserResult => $result->map($fn));
+        return $this->createParser(
+            fn (ParserInput $input): ParserResult => $this->parseInput($input)->map($fn),
+        );
     }
 
     /** {@inheritDoc} */
     final public function join(string $separator = ''): Parser
     {
-        return $this->transformResult(static fn (ParserResult $result): ParserResult => $result->join($separator));
+        return $this->createParser(
+            fn (ParserInput $input): ParserResult => $this->parseInput($input)->join($separator),
+        );
     }
-
-    /** {@inheritDoc} */
-    abstract public function parseInput(ParserInput $input): ParserResult;
 
     /**
      * @template U
-     * @param Closure(ParserResult<T>): ParserResult<U> $fn
+     * @param Closure(ParserInput): ParserResult<U> $parse
      * @return Parser<U>
      */
-    private function transformResult(Closure $fn): Parser
+    private function createParser(Closure $parse): Parser
     {
-        return new class ($this, $fn) extends AbstractParser {
-            private readonly Closure $fn;
-
-            /** @var ContextualParser<T> */
-            private readonly ContextualParser $parser;
+        return new class ($parse) extends AbstractParser {
+            private readonly Closure $parse;
 
             /**
-             * @param ContextualParser<T> $parser
-             * @param Closure(ParserResult<T>): ParserResult<U> $fn
+             * @param Closure(ParserInput): ParserResult<U> $parse
              */
-            public function __construct(ContextualParser $parser, Closure $fn)
+            public function __construct(Closure $parse)
             {
-                $this->parser = $parser;
-                $this->fn = $fn;
+                $this->parse = $parse;
             }
 
             /**
@@ -85,7 +84,7 @@ abstract class AbstractParser implements Parser, ContextualParser
              */
             public function parseInput(ParserInput $input): ParserResult
             {
-                return ($this->fn)($this->parser->parseInput($input));
+                return ($this->parse)($input);
             }
         };
     }
