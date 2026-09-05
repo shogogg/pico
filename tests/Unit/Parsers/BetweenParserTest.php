@@ -11,7 +11,6 @@ namespace Tests\Unit\Parsers;
 
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
-use Pico\Parsers\OptionalParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\RegExpParser;
 
@@ -33,11 +32,11 @@ describe('BetweenParser::parseInput', function (): void {
         $actual = new BetweenParser(
             new CharParser('('),
             new CharParser(')'),
-            new OptionalParser(new CharParser('x')),
+            (new CharParser('x'))->optional(),
         )->parseInput(new ParserInput('()'));
 
         // Assert
-        expect($actual)->toBeSuccessOf(null, 2);
+        expect($actual)->toBeSuccessOf('', 2);
     });
 
     it('should fail when the opening parser fails', function (): void {

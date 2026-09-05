@@ -84,11 +84,11 @@ final class Rfc5322EmailParser
             Pico::seq(
                 Pico::repeat(
                     Pico::seq(
-                        Pico::optional($fws)->map(static fn (?string $value): string => $value ?? ''),
+                        $fws->optional(),
                         $qcontent,
                     )->join(),
                 )->join(),
-                Pico::optional($fws)->map(static fn (?string $value): string => $value ?? ''),
+                $fws->optional(),
             )->join(),
         );
 

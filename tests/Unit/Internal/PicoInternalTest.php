@@ -34,6 +34,11 @@ describe('PicoInternal::ensureContextualParser()', function (): void {
                 return $this;
             }
 
+            public function optional(): Parser
+            {
+                return $this;
+            }
+
             public function join(string $separator = ''): Parser
             {
                 return $this;
@@ -96,6 +101,11 @@ describe('PicoInternal::asContextualParser()', function (): void {
             }
 
             public function map(\Closure $fn): Parser
+            {
+                return $this;
+            }
+
+            public function optional(): Parser
             {
                 return $this;
             }

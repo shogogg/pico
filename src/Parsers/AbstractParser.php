@@ -41,6 +41,14 @@ abstract class AbstractParser implements Parser, ContextualParser
         return new ExceptParser($this, $except);
     }
 
+    /** {@inheritDoc} */
+    final public function join(string $separator = ''): Parser
+    {
+        return $this->createParser(
+            fn (ParserInput $input): ParserResult => $this->parseInput($input)->join($separator),
+        );
+    }
+
     /**
      * @template U
      * @param Closure(T): U $fn
@@ -54,11 +62,12 @@ abstract class AbstractParser implements Parser, ContextualParser
     }
 
     /** {@inheritDoc} */
-    final public function join(string $separator = ''): Parser
+    final public function optional(): Parser
     {
-        return $this->createParser(
-            fn (ParserInput $input): ParserResult => $this->parseInput($input)->join($separator),
-        );
+        return $this->createParser(function (ParserInput $input): ParserResult {
+            $result = $this->parseInput($input);
+            return $result->isSuccess() ? $result : success('', 0);
+        });
     }
 
     /**

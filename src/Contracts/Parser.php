@@ -52,4 +52,11 @@ interface Parser
      * @return Parser<U>
      */
     public function map(Closure $fn): Parser;
+
+    /**
+     * Makes this parser optional.
+     *
+     * @return Parser<T|string>
+     */
+    public function optional(): Parser;
 }

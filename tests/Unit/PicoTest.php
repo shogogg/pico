@@ -12,7 +12,6 @@ use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
-use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
@@ -243,24 +242,6 @@ describe('Pico::lazy()', function (): void {
     it('should parse the parser returned by the factory', function (): void {
         // Act
         $actual = Pico::lazy(static fn (): CharParser => new CharParser('A'))->parse('ABC');
-
-        // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
-    });
-});
-
-describe('Pico::optional()', function (): void {
-    it('should return an OptionalParser instance', function (): void {
-        // Act
-        $actual = Pico::optional(Pico::char('A'));
-
-        // Assert
-        expect($actual)->toBeInstanceOf(OptionalParser::class);
-    });
-
-    it('should parse the given parser optionally', function (): void {
-        // Act
-        $actual = Pico::optional(Pico::char('A'))->parse('ABC');
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);

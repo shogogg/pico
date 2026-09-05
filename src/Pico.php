@@ -16,7 +16,6 @@ use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
-use Pico\Parsers\OptionalParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
@@ -179,18 +178,6 @@ final class Pico
     public static function lazy(Closure $factory): Parser
     {
         return new LazyParser($factory);
-    }
-
-    /**
-     * Creates a parser that makes the given parser optional.
-     *
-     * @template T
-     * @param Parser<T> $parser
-     * @return Parser<T|null>
-     */
-    public static function optional(Parser $parser): Parser
-    {
-        return new OptionalParser($parser);
     }
 
     /**

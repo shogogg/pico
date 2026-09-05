@@ -10,6 +10,7 @@ declare(strict_types=1);
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserInputException;
 use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 use Pico\Parsers\AbstractParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
@@ -75,6 +76,28 @@ describe('AbstractParser::map', function (): void {
 
         // Assert
         expect($wasCalled)->toBeFalse();
+    });
+});
+
+describe('AbstractParser::optional', function (): void {
+    it('should return the original successful result', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            (new CharParser('A'))->optional(),
+        )->parseInput(new ParserInput('ABC'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf('A', 1);
+    });
+
+    it('should return a successful empty-string result without consuming input when parsing fails', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            (new CharParser('A'))->optional(),
+        )->parseInput(new ParserInput('BBB'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf('', 0);
     });
 });
 
