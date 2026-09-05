@@ -81,25 +81,7 @@ final class Rfc5322EmailParser
         $atext = Pico::anyOf(
             Pico::alpha(),
             Pico::digit(),
-            Pico::char('!'),
-            Pico::char('#'),
-            Pico::char('$'),
-            Pico::char('%'),
-            Pico::char('&'),
-            Pico::char('\''),
-            Pico::char('*'),
-            Pico::char('+'),
-            Pico::char('-'),
-            Pico::char('/'),
-            Pico::char('='),
-            Pico::char('?'),
-            Pico::char('^'),
-            Pico::char('_'),
-            Pico::char('`'),
-            Pico::char('{'),
-            Pico::char('|'),
-            Pico::char('}'),
-            Pico::char('~'),
+            Pico::oneOf("!#$%&'*+-/=?^_`{|}~"),
         );
 
         // dot-atom-text = 1*atext *("." 1*atext)

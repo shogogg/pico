@@ -297,6 +297,16 @@ describe('Pico::lazy()', function (): void {
     });
 });
 
+describe('Pico::oneOf()', function (): void {
+    it('should parse a character in the given character set', function (): void {
+        // Act
+        $actual = Pico::oneOf('ABC')->parse('BCD');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('B', 1);
+    });
+});
+
 describe('Pico::predicate()', function (): void {
     it('should return a PredicateParser instance', function (): void {
         // Act

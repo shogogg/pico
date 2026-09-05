@@ -17,6 +17,7 @@ use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\EofParser;
 use Pico\Parsers\LazyParser;
+use Pico\Parsers\OneOfParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
@@ -206,6 +207,17 @@ final class Pico
     public static function lazy(Closure $factory): Parser
     {
         return new LazyParser($factory);
+    }
+
+    /**
+     * Creates a parser that matches a character from the given UTF-8 character set.
+     *
+     * @return Parser<string>
+     * @throws \Pico\Exceptions\ParserException When the character set is empty or invalid UTF-8.
+     */
+    public static function oneOf(string $characters): Parser
+    {
+        return new OneOfParser($characters);
     }
 
     /**
