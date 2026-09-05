@@ -32,6 +32,25 @@ abstract class AbstractParser implements Parser, ContextualParser
         return $this->parseInput(new ParserInput($input));
     }
 
+    /** {@inheritDoc} */
+    final public function complete(): Parser
+    {
+        return $this->createParser(function (ParserInput $input): ParserResult {
+            $result = $this->parseInput($input);
+            if ($result->isFailure()) {
+                return $result;
+            }
+
+            $end = (new EofParser())->parseInput($input->advanced($result->consumedLength()));
+
+            if ($end->isFailure()) {
+                return failure();
+            }
+
+            return $result;
+        });
+    }
+
     /**
      * @template TExcept
      * @param Parser<TExcept> $except

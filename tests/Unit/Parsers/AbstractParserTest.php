@@ -52,6 +52,32 @@ describe('AbstractParser::parse', function (): void {
     });
 });
 
+describe('AbstractParser::complete', function (): void {
+    it('should preserve the output and consumed length after consuming the complete input', function (): void {
+        // Act
+        $actual = (new CharParser('A'))->complete()->parse('A');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('A', 1);
+    });
+
+    it('should fail when input remains after parsing', function (): void {
+        // Act
+        $actual = (new CharParser('A'))->complete()->parse('AB');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should consume multibyte input completely', function (): void {
+        // Act
+        $actual = (new CharParser('あ'))->complete()->parse('あ');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('あ', 1);
+    });
+});
+
 describe('AbstractParser::repeat', function (): void {
     it('should reject a negative minimum repetition count', function (): void {
         // Act

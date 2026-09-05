@@ -30,6 +30,13 @@ interface Parser
     public function parse(string $input): ParserResult;
 
     /**
+     * Requires this parser to consume the complete input.
+     *
+     * @return Parser<T>
+     */
+    public function complete(): Parser;
+
+    /**
      * Repeats this parser.
      *
      * @return Parser<list<T>>
