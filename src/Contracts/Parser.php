@@ -11,6 +11,7 @@ namespace Pico\Contracts;
 
 use Closure;
 use Pico\Exceptions\ParserInputException;
+use Pico\Exceptions\ParserException;
 
 /**
  * Interface for a parser.
@@ -27,6 +28,14 @@ interface Parser
      * @throws ParserInputException
      */
     public function parse(string $input): ParserResult;
+
+    /**
+     * Repeats this parser.
+     *
+     * @return Parser<list<T>>
+     * @throws ParserException When the repetition bounds are invalid.
+     */
+    public function repeat(int $min = 0, int $max = PHP_INT_MAX): Parser;
 
     /**
      * Parses this parser unless the exclusion parser succeeds.

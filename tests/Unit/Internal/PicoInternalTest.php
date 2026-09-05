@@ -24,6 +24,11 @@ describe('PicoInternal::ensureContextualParser()', function (): void {
                 return Failure::getInstance();
             }
 
+            public function repeat(int $min = 0, int $max = PHP_INT_MAX): Parser
+            {
+                return $this;
+            }
+
             public function except(Parser $except): Parser
             {
                 return $this;
@@ -98,6 +103,11 @@ describe('PicoInternal::asContextualParser()', function (): void {
             public function parse(string $input): ParserResult
             {
                 return Failure::getInstance();
+            }
+
+            public function repeat(int $min = 0, int $max = PHP_INT_MAX): Parser
+            {
+                return $this;
             }
 
             public function except(Parser $except): Parser

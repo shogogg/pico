@@ -52,7 +52,7 @@ final class Rfc5322EmailParser
 
         $atext = Pico::anyOf($alpha, $digit, $specials);
 
-        $atom = Pico::repeat($atext, min: 1)->join();
+        $atom = $atext->repeat(min: 1)->join();
 
         $dotAtom = Pico::sepBy($atom, Pico::char('.'), min: 1)->join('.');
 
@@ -60,11 +60,11 @@ final class Rfc5322EmailParser
 
         $fws = Pico::anyOf(
             Pico::seq(
-                Pico::repeat($wsp)->join(),
+                $wsp->repeat()->join(),
                 Pico::string("\r\n"),
-                Pico::repeat($wsp, min: 1)->join(),
+                $wsp->repeat(min: 1)->join(),
             )->join(),
-            Pico::repeat($wsp, min: 1)->join(),
+            $wsp->repeat(min: 1)->join(),
         );
 
         $qtext = Pico::anyOf(
@@ -82,12 +82,7 @@ final class Rfc5322EmailParser
             Pico::char('"'),
             Pico::char('"'),
             Pico::seq(
-                Pico::repeat(
-                    Pico::seq(
-                        $fws->optional(),
-                        $qcontent,
-                    )->join(),
-                )->join(),
+                Pico::join($fws->optional(), $qcontent)->repeat()->join(),
                 $fws->optional(),
             )->join(),
         );

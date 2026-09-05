@@ -15,7 +15,6 @@ use Pico\Parsers\LazyParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
-use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\SkipLeftParser;
@@ -349,24 +348,6 @@ describe('Pico::range()', function (): void {
 
         // Assert
         expect($action)->toThrow(\Pico\Exceptions\ParserException::class, 'The range start must not exceed the range end.');
-    });
-});
-
-describe('Pico::repeat()', function (): void {
-    it('should return a RepeatParser instance', function (): void {
-        // Act
-        $actual = Pico::repeat(Pico::char('A'));
-
-        // Assert
-        expect($actual)->toBeInstanceOf(RepeatParser::class);
-    });
-
-    it('should parse the given parser repeatedly', function (): void {
-        // Act
-        $actual = Pico::repeat(Pico::char('A'), min: 1, max: 2)->parse('AAA');
-
-        // Assert
-        expect($actual)->toBeSuccessOf(['A', 'A'], 2);
     });
 });
 

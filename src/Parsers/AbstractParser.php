@@ -12,6 +12,7 @@ namespace Pico\Parsers;
 use Closure;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
+use Pico\Exceptions\ParserException;
 
 /**
  * Base class for parsers that operate on a ParserInput.
@@ -67,6 +68,48 @@ abstract class AbstractParser implements Parser, ContextualParser
         return $this->createParser(function (ParserInput $input): ParserResult {
             $result = $this->parseInput($input);
             return $result->isSuccess() ? $result : success('', 0);
+        });
+    }
+
+    /** {@inheritDoc} */
+    final public function repeat(int $min = 0, int $max = PHP_INT_MAX): Parser
+    {
+        if ($min < 0) {
+            throw new ParserException('The minimum repetition count must not be negative.');
+        }
+        if ($max < $min) {
+            throw new ParserException('The maximum repetition count must be at least the minimum repetition count.');
+        }
+
+        return $this->createParser(function (ParserInput $input) use ($min, $max): ParserResult {
+            /** @var list<T> $outputs */
+            $outputs = [];
+            $consumedLength = 0;
+            $currentInput = $input;
+
+            for ($count = 0; $count < $max; ++$count) {
+                /** @var ParserResult<T> $result */
+                $result = $this->parseInput($currentInput);
+                if ($result->isFailure()) {
+                    break;
+                }
+
+                $length = $result->consumedLength();
+                if ($length === 0) {
+                    break;
+                }
+
+                $outputs[] = $result->output();
+                $consumedLength += $length;
+                $currentInput = $currentInput->advanced($length);
+            }
+
+            if ($count < $min) {
+                return failure();
+            }
+
+            /** @var ParserResult<list<T>> */
+            return success($outputs, $consumedLength);
         });
     }
 

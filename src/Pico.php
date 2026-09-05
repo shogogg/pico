@@ -19,7 +19,6 @@ use Pico\Parsers\LazyParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
-use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\SkipLeftParser;
@@ -214,18 +213,6 @@ final class Pico
     public static function range(string $from, string $to): Parser
     {
         return new RangeParser($from, $to);
-    }
-
-    /**
-     * Creates a parser that repeatedly matches the given parser.
-     *
-     * @template T
-     * @param Parser<T> $parser
-     * @return Parser<list<T>>
-     */
-    public static function repeat(Parser $parser, int $min = 0, int $max = PHP_INT_MAX): Parser
-    {
-        return new RepeatParser($parser, $min, $max);
     }
 
     /**
