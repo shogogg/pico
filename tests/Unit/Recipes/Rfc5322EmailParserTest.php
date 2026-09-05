@@ -41,7 +41,19 @@ describe('Rfc5322EmailParser::address', function (): void {
         ],
         'quoted local part with folded FWS' => [
             "\"quoted\r\n local\"@example.com",
-            ['local_part' => "quoted\r\n local", 'domain' => 'example.com'],
+            ['local_part' => 'quoted local', 'domain' => 'example.com'],
+        ],
+        'dot-atom with nested comments' => [
+            'first(outer(inner))@example.com',
+            ['local_part' => 'first', 'domain' => 'example.com'],
+        ],
+        'dot-atom with escaped comment parenthesis' => [
+            'first(\\))@example.com',
+            ['local_part' => 'first', 'domain' => 'example.com'],
+        ],
+        'quoted local part with CFWS' => [
+            '(comment)"quoted"(comment)@example.com',
+            ['local_part' => 'quoted', 'domain' => 'example.com'],
         ],
         'escaped character in quoted local part' => [
             '"foo\\"bar"@example.com',
@@ -50,6 +62,14 @@ describe('Rfc5322EmailParser::address', function (): void {
         'empty quoted local part' => [
             '""@example.com',
             ['local_part' => '', 'domain' => 'example.com'],
+        ],
+        'domain literal' => [
+            'user@[127.0.0.1]',
+            ['local_part' => 'user', 'domain' => '[127.0.0.1]'],
+        ],
+        'IPv6 domain literal' => [
+            'user@[IPv6:2001:db8::1]',
+            ['local_part' => 'user', 'domain' => '[IPv6:2001:db8::1]'],
         ],
     ]);
 
@@ -66,7 +86,10 @@ describe('Rfc5322EmailParser::address', function (): void {
         'FWS without whitespace after line break' => "\"foo\r\nbar\"@example.com",
         'consecutive dots in local part' => 'first..last@example.com',
         'missing domain' => 'first.last@',
-        'first last@example.com',
-        'あいう@example.com',
+        'unquoted whitespace' => 'first last@example.com',
+        'non-ASCII local part' => 'あいう@example.com',
+        'DEL in quoted pair' => "\"foo\\" . chr(0x7f) . "bar\"@example.com",
+        'backslash in domain literal' => 'user@[a\\b]',
+        'unterminated domain literal' => 'user@[127.0.0.1',
     ]);
 });
