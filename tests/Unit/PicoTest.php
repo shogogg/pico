@@ -232,6 +232,36 @@ describe('Pico::digit()', function (): void {
     ]);
 });
 
+describe('Pico::join()', function (): void {
+    it('should join sequential parser outputs while preserving the total consumed length', function (): void {
+        // Act
+        $actual = Pico::join(
+            Pico::char('A'),
+            Pico::string('BC'),
+            Pico::char('D'),
+        )->parse('ABCD!');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('ABCD', 4);
+    });
+
+    it('should fail when a parser in the sequence fails', function (): void {
+        // Act
+        $actual = Pico::join(Pico::char('A'), Pico::char('B'))->parse('AX');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should succeed with an empty string when no parsers are given', function (): void {
+        // Act
+        $actual = Pico::join()->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('', 0);
+    });
+});
+
 describe('Pico::lazy()', function (): void {
     it('should return a LazyParser instance', function (): void {
         // Act

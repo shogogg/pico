@@ -171,6 +171,18 @@ final class Pico
     }
 
     /**
+     * Creates a parser that joins sequential parser outputs into a string.
+     *
+     * @template T
+     * @param Parser<T> ...$parsers
+     * @return Parser<string>
+     */
+    public static function join(Parser ...$parsers): Parser
+    {
+        return self::seq(...$parsers)->join();
+    }
+
+    /**
      * Creates a parser that defers constructing a parser until parsing.
      *
      * @template T
