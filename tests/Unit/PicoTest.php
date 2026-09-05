@@ -18,6 +18,8 @@ use Pico\Parsers\RegExpParser;
 use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
+use Pico\Parsers\SkipLeftParser;
+use Pico\Parsers\SkipRightParser;
 use Pico\Parsers\StringParser;
 use Pico\Pico;
 
@@ -389,6 +391,26 @@ describe('Pico::seq()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf(['A', '1'], 2);
+    });
+});
+
+describe('Pico::skipLeft()', function (): void {
+    it('should return a SkipLeftParser instance', function (): void {
+        // Act
+        $actual = Pico::skipLeft(Pico::char(':'), Pico::char('A'));
+
+        // Assert
+        expect($actual)->toBeInstanceOf(SkipLeftParser::class);
+    });
+});
+
+describe('Pico::skipRight()', function (): void {
+    it('should return a SkipRightParser instance', function (): void {
+        // Act
+        $actual = Pico::skipRight(Pico::char('A'), Pico::char(';'));
+
+        // Assert
+        expect($actual)->toBeInstanceOf(SkipRightParser::class);
     });
 });
 

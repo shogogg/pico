@@ -22,6 +22,8 @@ use Pico\Parsers\RegExpParser;
 use Pico\Parsers\RepeatParser;
 use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
+use Pico\Parsers\SkipLeftParser;
+use Pico\Parsers\SkipRightParser;
 use Pico\Parsers\StringParser;
 
 /**
@@ -248,6 +250,34 @@ final class Pico
     public static function seq(Parser ...$parsers): Parser
     {
         return new SeqParser(...$parsers);
+    }
+
+    /**
+     * Parses the left parser, then returns the output of the right parser.
+     *
+     * @template TLeft
+     * @template TRight
+     * @param Parser<TLeft> $left
+     * @param Parser<TRight> $right
+     * @return Parser<TRight>
+     */
+    public static function skipLeft(Parser $left, Parser $right): Parser
+    {
+        return new SkipLeftParser($left, $right);
+    }
+
+    /**
+     * Parses the right parser after the left parser, then returns the left output.
+     *
+     * @template TLeft
+     * @template TRight
+     * @param Parser<TLeft> $left
+     * @param Parser<TRight> $right
+     * @return Parser<TLeft>
+     */
+    public static function skipRight(Parser $left, Parser $right): Parser
+    {
+        return new SkipRightParser($left, $right);
     }
 
     /**
