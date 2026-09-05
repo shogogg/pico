@@ -251,18 +251,6 @@ final class Pico
     }
 
     /**
-     * Creates a parser that discards the output of another parser.
-     *
-     * @template T
-     * @param Parser<T> $parser
-     * @return Parser<string>
-     */
-    public static function skip(Parser $parser): Parser
-    {
-        return $parser->map(static fn (): string => '');
-    }
-
-    /**
      * Creates a parser that matches the given string.
      *
      * @return Parser<string>

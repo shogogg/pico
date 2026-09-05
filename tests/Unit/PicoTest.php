@@ -392,24 +392,6 @@ describe('Pico::seq()', function (): void {
     });
 });
 
-describe('Pico::skip()', function (): void {
-    it('should discard the output while preserving the consumed length', function (): void {
-        // Act
-        $actual = Pico::skip(Pico::string('ABC'))->parse('ABC123');
-
-        // Assert
-        expect($actual)->toBeSuccessOf('', 3);
-    });
-
-    it('should fail when the given parser fails', function (): void {
-        // Act
-        $actual = Pico::skip(Pico::char('A'))->parse('B');
-
-        // Assert
-        expect($actual)->toBeFailure();
-    });
-});
-
 describe('Pico::string()', function (): void {
     it('should return a StringParser instance', function (): void {
         // Act

@@ -101,6 +101,24 @@ describe('AbstractParser::optional', function (): void {
     });
 });
 
+describe('AbstractParser::skip', function (): void {
+    it('should discard the output while preserving the consumed length', function (): void {
+        // Act
+        $actual = (new CharParser('A'))->skip()->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('', 1);
+    });
+
+    it('should return a failure when parsing fails', function (): void {
+        // Act
+        $actual = (new CharParser('A'))->skip()->parse('B');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+});
+
 describe('AbstractParser::join', function (): void {
     it('should join an array output with the separator', function (): void {
         // Act

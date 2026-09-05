@@ -70,6 +70,12 @@ abstract class AbstractParser implements Parser, ContextualParser
         });
     }
 
+    /** {@inheritDoc} */
+    final public function skip(): Parser
+    {
+        return $this->map(static fn (): string => '');
+    }
+
     /**
      * @template U
      * @param Closure(ParserInput): ParserResult<U> $parse

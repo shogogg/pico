@@ -59,4 +59,11 @@ interface Parser
      * @return Parser<T|string>
      */
     public function optional(): Parser;
+
+    /**
+     * Discards the output of a successful parse.
+     *
+     * @return Parser<string>
+     */
+    public function skip(): Parser;
 }
