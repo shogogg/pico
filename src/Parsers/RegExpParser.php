@@ -41,6 +41,10 @@ final class RegExpParser extends AbstractParser
     {
         $matched = preg_match($this->expression, $input->input, $matches, 0, $input->byteOffset());
 
+        if ($matched === false) {
+            throw new ParserException('The regular expression failed to execute: '.preg_last_error_msg());
+        }
+
         if ($matched === 0) {
             return failure();
         }

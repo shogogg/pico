@@ -38,6 +38,31 @@ describe('RegExpParser::parseInput', function (): void {
         expect($actual)->toBeFailure();
     });
 
+    it('should throw when the regular expression cannot be executed', function (): void {
+        // Arrange
+        $parser = new RegExpParser('a+');
+        $previousBacktrackLimit = ini_get('pcre.backtrack_limit');
+
+        if ($previousBacktrackLimit === false) {
+            throw new \LogicException('Unable to read the PCRE backtrack limit.');
+        }
+
+        try {
+            ini_set('pcre.backtrack_limit', '0');
+
+            // Act
+            $action = static fn () => $parser->parseInput(new ParserInput('a'));
+
+            // Assert
+            expect($action)->toThrow(
+                ParserException::class,
+                'The regular expression failed to execute: Backtrack limit exhausted',
+            );
+        } finally {
+            ini_set('pcre.backtrack_limit', $previousBacktrackLimit);
+        }
+    });
+
     it('should reject an invalid pattern', function (): void {
         // Act
         $action = static fn (): RegExpParser => new RegExpParser('[');
