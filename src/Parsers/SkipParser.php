@@ -16,25 +16,24 @@ use Pico\Internal\PicoInternal;
 /**
  * Parser that consumes a sequence of parsers without retaining their outputs.
  *
- * @template T
  * @extends AbstractParser<string>
  */
 final class SkipParser extends AbstractParser
 {
-    /** @var list<ContextualParser<T>> */
+    /** @var list<ContextualParser<*>> */
     private readonly array $parsers;
 
     /**
      * {@see SkipParser} constructor.
      *
-     * @param Parser<T> ...$parsers
+     * @param Parser<*> ...$parsers
      */
     public function __construct(Parser ...$parsers)
     {
         $contextualParsers = [];
 
         foreach ($parsers as $parser) {
-            $contextualParsers[] = PicoInternal::asContextualParser($parser);
+            $contextualParsers[] = PicoInternal::asUntypedContextualParser($parser);
         }
 
         $this->parsers = $contextualParsers;

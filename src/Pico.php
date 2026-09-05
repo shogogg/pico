@@ -255,8 +255,7 @@ final class Pico
     /**
      * Creates a parser that consumes sequential parser outputs without retaining them.
      *
-     * @template T
-     * @param Parser<T> ...$parsers
+     * @param Parser<*> ...$parsers
      * @return Parser<string>
      */
     public static function skip(Parser ...$parsers): Parser

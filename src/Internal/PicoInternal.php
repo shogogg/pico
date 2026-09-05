@@ -44,6 +44,24 @@ final class PicoInternal
     }
 
     /**
+     * Returns a parser with an intentionally discarded output type as a ContextualParser.
+     *
+     * @param Parser<*> $parser
+     * @return ContextualParser<*>
+     * @throws ParserException When the parser does not implement ContextualParser.
+     * @internal
+     */
+    public static function asUntypedContextualParser(Parser $parser): ContextualParser
+    {
+        if (!($parser instanceof ContextualParser)) {
+            $className = $parser::class;
+            throw new ParserException($className . ' is not a ContextualParser');
+        }
+
+        return $parser;
+    }
+
+    /**
      * Ensures that the parser supports parsing from a ParserInput.
      *
      * @template T

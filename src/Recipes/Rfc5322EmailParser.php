@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace Pico\Recipes;
 
-use LogicException;
 use Pico\Contracts\Parser;
 use Pico\Pico;
 
@@ -61,22 +60,22 @@ final class Rfc5322EmailParser
             // ccontent = ctext / quoted-pair / comment
             $ccontent = Pico::anyOf($ctext, $quotedPair, $comment);
 
-            return Pico::seq(
+            return Pico::skip(
                 Pico::char('('),
-                Pico::seq($fws->optional(), $ccontent)->repeat()->skip(),
+                Pico::seq($fws->optional(), $ccontent)->repeat(),
                 $fws->optional(),
                 Pico::char(')'),
-            )->skip();
+            );
         });
 
         // CFWS = (1*([FWS] comment) [FWS]) / FWS
         $cfws = Pico::anyOf(
-            Pico::skipLeft(
+            Pico::skip(
                 Pico::seq($fws->optional(), $comment)->repeat(min: 1),
                 $fws->optional(),
             ),
-            $fws,
-        )->skip();
+            Pico::skip($fws),
+        );
 
         // atext = ALPHA / DIGIT / "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "/" / "=" / "?" / "^" / "_" / "`" / "{" / "|" / "}" / "~"
         $atext = Pico::anyOf(
@@ -143,7 +142,7 @@ final class Rfc5322EmailParser
         // local-part = dot-atom / quoted-string
         $localPart = Pico::anyOf($dotAtom, $quotedString);
 
-        // dtext = %d33-90 / %d94-126
+        // dtext = %d33-90 / %d94-126 ; Printable US-ASCII characters not including "[", "]", or "\"
         $dtext = Pico::anyOf(
             Pico::range(chr(33), chr(90)),
             Pico::range(chr(94), chr(126)),
@@ -165,11 +164,9 @@ final class Rfc5322EmailParser
         $domain = Pico::anyOf($dotAtom, $domainLiteral);
 
         // addr-spec = local-part "@" domain
-        return Pico::seq($localPart, Pico::char('@'), $domain)
-            ->map(static fn (array $parts): array => [
-                'local_part' => $parts[0],
-                'domain' => $parts[2],
-            ]);
+        return Pico::seq($localPart, Pico::char('@'), $domain)->map(static fn (array $parts): array => [
+            'local_part' => $parts[0],
+            'domain' => $parts[2],
+        ]);
     }
-
 }
