@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace Pico\Recipes;
+namespace Pico\Recipes\Rfc5322;
 
 use Pico\Contracts\Parser;
 use Pico\Pico;

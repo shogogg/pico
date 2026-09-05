@@ -7,9 +7,9 @@
  */
 declare(strict_types=1);
 
-namespace Tests\Unit\Recipes;
+namespace Tests\Unit\Recipes\Rfc5322;
 
-use Pico\Recipes\Rfc5322EmailParser;
+use Pico\Recipes\Rfc5322\Rfc5322EmailParser;
 
 describe('Rfc5322EmailParser::address', function (): void {
     it('should parse an addr-spec and consume the complete input', function (string $input, array $expected): void {
