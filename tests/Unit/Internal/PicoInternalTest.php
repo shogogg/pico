@@ -54,6 +54,11 @@ describe('PicoInternal::ensureContextualParser()', function (): void {
                 return $this;
             }
 
+            public function where(\Closure $predicate): Parser
+            {
+                return $this;
+            }
+
             public function join(string $separator = ''): Parser
             {
                 return $this;
@@ -136,6 +141,11 @@ describe('PicoInternal::asContextualParser()', function (): void {
             }
 
             public function skip(): Parser
+            {
+                return $this;
+            }
+
+            public function where(\Closure $predicate): Parser
             {
                 return $this;
             }

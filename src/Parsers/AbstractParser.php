@@ -139,6 +139,21 @@ abstract class AbstractParser implements Parser, ContextualParser
     }
 
     /**
+     * @param Closure(T): bool $predicate
+     * @return Parser<T>
+     */
+    final public function where(Closure $predicate): Parser
+    {
+        return $this->createParser(function (ParserInput $input) use ($predicate): ParserResult {
+            $result = $this->parseInput($input);
+            if ($result->isFailure()) {
+                return $result;
+            }
+            return $predicate($result->output()) ? $result : failure();
+        });
+    }
+
+    /**
      * @template U
      * @param Closure(ParserInput): ParserResult<U> $parse
      * @return Parser<U>

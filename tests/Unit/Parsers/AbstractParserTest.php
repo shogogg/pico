@@ -217,6 +217,65 @@ describe('AbstractParser::skip', function (): void {
     });
 });
 
+describe('AbstractParser::where', function (): void {
+    it('should preserve a successful output when the predicate succeeds', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            (new CharParser('A'))->where(static fn (string $char): bool => $char === 'A'),
+        )->parseInput(new ParserInput('ABC'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf('A', 1);
+    });
+
+    it('should preserve the consumed length when the predicate succeeds', function (): void {
+        // Arrange
+        $parser = new class () extends AbstractParser {
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return success('accepted', 2);
+            }
+        };
+
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            $parser->where(static fn (string $value): bool => $value === 'accepted'),
+        )->parseInput(new ParserInput('AB'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf('accepted', 2);
+    });
+
+    it('should return a failure when the predicate fails', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            (new CharParser('A'))->where(static fn (string $char): bool => $char === 'B'),
+        )->parseInput(new ParserInput('ABC'));
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should not call the predicate when parsing fails', function (): void {
+        // Arrange
+        $wasCalled = false;
+        $parser = PicoInternal::asContextualParser(
+            (new CharParser('A'))->where(function (string $char) use (&$wasCalled): bool {
+                $wasCalled = true;
+
+                return $char === 'A';
+            }),
+        );
+
+        // Act
+        $actual = $parser->parseInput(new ParserInput('B'));
+
+        // Assert
+        expect($actual)->toBeFailure();
+        expect($wasCalled)->toBeFalse();
+    });
+});
+
 describe('AbstractParser::join', function (): void {
     it('should join an array output with the separator', function (): void {
         // Act

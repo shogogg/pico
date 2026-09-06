@@ -82,4 +82,12 @@ interface Parser
      * @return Parser<string>
      */
     public function skip(): Parser;
+
+    /**
+     * Keeps successful results that satisfy the predicate.
+     *
+     * @param Closure(T): bool $predicate
+     * @return Parser<T>
+     */
+    public function where(Closure $predicate): Parser;
 }
