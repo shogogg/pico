@@ -16,7 +16,7 @@ use Pico\Exceptions\ParserException;
 /**
  * Interface for a parser.
  *
- * @template T
+ * @template-covariant T
  */
 interface Parser
 {
