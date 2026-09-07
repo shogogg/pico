@@ -285,6 +285,22 @@ final class Pico
     }
 
     /**
+     * Creates a parser that combines the outputs of three sequential parsers.
+     *
+     * @template A
+     * @template B
+     * @template C
+     * @param Parser<A> $a
+     * @param Parser<B> $b
+     * @param Parser<C> $c
+     * @return Parser<array{A, B, C}>
+     */
+    public static function triple(Parser $a, Parser $b, Parser $c): Parser
+    {
+        return Combinators::triple($a, $b, $c);
+    }
+
+    /**
      * Creates a parser that matches any ASCII whitespace character.
      *
      * @return Parser<string>

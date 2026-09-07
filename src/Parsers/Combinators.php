@@ -175,4 +175,20 @@ final class Combinators
         $parser = $left->then($right)->map(static fn (array $outputs): mixed => $outputs[0]);
         return PicoInternal::asContextualParser($parser);
     }
+
+    /**
+     * @template A
+     * @template B
+     * @template C
+     * @param Parser<A> $a
+     * @param Parser<B> $b
+     * @param Parser<C> $c
+     * @return ContextualParser<array{A, B, C}>
+     */
+    public static function triple(Parser $a, Parser $b, Parser $c): ContextualParser
+    {
+        /** @var ContextualParser<array{A, B, C}> $parser */
+        $parser = self::seq($a, $b, $c);
+        return PicoInternal::asContextualParser($parser);
+    }
 }

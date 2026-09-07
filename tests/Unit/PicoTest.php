@@ -411,6 +411,65 @@ describe('Pico::pair()', function (): void {
     });
 });
 
+describe('Pico::triple()', function (): void {
+    it('should combine outputs in order and preserve the total consumed length', function (): void {
+        // Act
+        $actual = Pico::triple(Pico::char('A'), Pico::string('BC'), Pico::char('D'))->parse('ABCD!');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['A', 'BC', 'D'], 4);
+    });
+
+    it('should not evaluate later parsers when the first parser fails', function (): void {
+        // Arrange
+        $secondWasResolved = false;
+        $thirdWasResolved = false;
+        $second = Pico::lazy(function () use (&$secondWasResolved): Parser {
+            $secondWasResolved = true;
+
+            return Pico::char('B');
+        });
+        $third = Pico::lazy(function () use (&$thirdWasResolved): Parser {
+            $thirdWasResolved = true;
+
+            return Pico::char('C');
+        });
+
+        // Act
+        $actual = Pico::triple(Pico::char('A'), $second, $third)->parse('XBC');
+
+        // Assert
+        expect($actual)->toBeFailure();
+        expect($secondWasResolved)->toBeFalse();
+        expect($thirdWasResolved)->toBeFalse();
+    });
+
+    it('should not evaluate the third parser when the second parser fails', function (): void {
+        // Arrange
+        $thirdWasResolved = false;
+        $third = Pico::lazy(function () use (&$thirdWasResolved): Parser {
+            $thirdWasResolved = true;
+
+            return Pico::char('C');
+        });
+
+        // Act
+        $actual = Pico::triple(Pico::char('A'), Pico::char('B'), $third)->parse('AXC');
+
+        // Assert
+        expect($actual)->toBeFailure();
+        expect($thirdWasResolved)->toBeFalse();
+    });
+
+    it('should fail when the third parser fails', function (): void {
+        // Act
+        $actual = Pico::triple(Pico::char('A'), Pico::char('B'), Pico::char('C'))->parse('ABX');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+});
+
 describe('Pico::predicate()', function (): void {
     it('should parse a UTF-8 character satisfying the predicate', function (): void {
         // Arrange
