@@ -207,7 +207,19 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function string(string $expected): ContextualParser
     {
-        return new StringParser($expected);
+        if (!mb_check_encoding($expected, 'UTF-8')) {
+            throw new ParserException('The expected string must be valid UTF-8.');
+        }
+        $length = mb_strlen($expected, 'UTF-8');
+
+        return self::create(static function (ParserInput $input) use ($expected, $length): ParserResult {
+            if ($expected === '') {
+                return failure();
+            }
+            return $input->startsWith($expected)
+                ? success($expected, $length)
+                : failure();
+        });
     }
 
     /** @return ContextualParser<string> */

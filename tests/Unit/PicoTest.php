@@ -11,7 +11,6 @@ use Pico\Contracts\Parser;
 use Pico\Exceptions\ParserException;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\RegExpParser;
-use Pico\Parsers\StringParser;
 use Pico\Pico;
 
 describe('Pico::alpha()', function (): void {
@@ -810,21 +809,43 @@ describe('Pico::skipRight()', function (): void {
 });
 
 describe('Pico::string()', function (): void {
-    it('should return a StringParser instance', function (): void {
+    it('should parse the given string', function (string $expected, string $input, int $consumedLength): void {
         // Act
-        $actual = Pico::string('AB');
+        $actual = Pico::string($expected)->parse($input);
 
         // Assert
-        expect($actual)->toBeInstanceOf(StringParser::class);
-    });
+        expect($actual)->toBeSuccessOf($expected, $consumedLength);
+    })->with([
+        ['abc', 'abcdef', 3],
+        ['あい', 'あいう', 2],
+    ]);
 
-    it('should parse the given string', function (): void {
+    it('should reject an invalid UTF-8 expected string', function (string $expected): void {
+        Pico::string($expected);
+    })->with([
+        'invalid byte' => "abc\x80",
+        'incomplete multibyte character' => "abc\xE3\x81",
+    ])->throws(ParserException::class, 'The expected string must be valid UTF-8.');
+
+    it('should fail when the expected string is empty', function (): void {
         // Act
-        $actual = Pico::string('AB')->parse('ABC');
+        $actual = Pico::string('')->parse('abc');
 
         // Assert
-        expect($actual)->toBeSuccessOf('AB', 2);
+        expect($actual)->toBeFailure();
     });
+
+    it('should fail when the expected string does not match', function (string $expected, string $input): void {
+        // Act
+        $actual = Pico::string($expected)->parse($input);
+
+        // Assert
+        expect($actual)->toBeFailure();
+    })->with([
+        ['abc', 'abd'],
+        ['abc', 'ab'],
+        ['あい', 'あう'],
+    ]);
 });
 
 describe('Pico::whitespace()', function (): void {
