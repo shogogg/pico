@@ -36,7 +36,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     /** {@inheritDoc} */
     final public function complete(): Parser
     {
-        return self::createParser(function (ParserInput $input): ParserResult {
+        return self::create(function (ParserInput $input): ParserResult {
             $result = $this->parseInput($input);
             return $result->isFailure() || $input->advanced($result->consumedLength())->isAtEnd()
                 ? $result
@@ -57,7 +57,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     /** {@inheritDoc} */
     final public function join(string $separator = ''): Parser
     {
-        return self::createParser(
+        return self::create(
             fn (ParserInput $input): ParserResult => $this->parseInput($input)->join($separator),
         );
     }
@@ -69,7 +69,7 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function map(Closure $fn): Parser
     {
-        return self::createParser(
+        return self::create(
             fn (ParserInput $input): ParserResult => $this->parseInput($input)->map($fn),
         );
     }
@@ -77,7 +77,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     /** {@inheritDoc} */
     final public function optional(): Parser
     {
-        return self::createParser(function (ParserInput $input): ParserResult {
+        return self::create(function (ParserInput $input): ParserResult {
             $result = $this->parseInput($input);
             return $result->isSuccess() ? $result : success('', 0);
         });
@@ -90,7 +90,7 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function orElse(Closure $fallback): Parser
     {
-        return self::createParser(function (ParserInput $input) use ($fallback): ParserResult {
+        return self::create(function (ParserInput $input) use ($fallback): ParserResult {
             $result = $this->parseInput($input);
             return $result->isSuccess() ? $result : success($fallback(), 0);
         });
@@ -106,7 +106,7 @@ abstract class AbstractParser implements Parser, ContextualParser
             throw new ParserException('The maximum repetition count must be at least the minimum repetition count.');
         }
 
-        return self::createParser(function (ParserInput $input) use ($min, $max): ParserResult {
+        return self::create(function (ParserInput $input) use ($min, $max): ParserResult {
             /** @var list<T> $outputs */
             $outputs = [];
             $consumedLength = 0;
@@ -153,7 +153,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     {
         $right = PicoInternal::asContextualParser($parser);
 
-        return self::createParser(function (ParserInput $input) use ($right): ParserResult {
+        return self::create(function (ParserInput $input) use ($right): ParserResult {
             $leftResult = $this->parseInput($input);
             if ($leftResult->isFailure()) {
                 return failure();
@@ -178,7 +178,7 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function where(Closure $predicate): Parser
     {
-        return self::createParser(function (ParserInput $input) use ($predicate): ParserResult {
+        return self::create(function (ParserInput $input) use ($predicate): ParserResult {
             $result = $this->parseInput($input);
             if ($result->isFailure()) {
                 return $result;
@@ -188,27 +188,23 @@ abstract class AbstractParser implements Parser, ContextualParser
     }
 
     /**
-     * @internal
      * @template U
      * @param Closure(ParserInput): ParserResult<U> $parse
-     * @return ContextualParser<U>
+     * @return self<U>
      */
-    public static function createParser(Closure $parse): ContextualParser
+    private static function create(Closure $parse): self
     {
+        /** @extends AbstractParser<T> */
         return new class ($parse) extends AbstractParser {
             private readonly Closure $parse;
 
-            /**
-             * @param Closure(ParserInput): ParserResult<U> $parse
-             */
+            /** @param Closure(ParserInput): ParserResult<T> $parse */
             public function __construct(Closure $parse)
             {
                 $this->parse = $parse;
             }
 
-            /**
-             * @return ParserResult<U>
-             */
+            /** @return ParserResult<T> */
             public function parseInput(ParserInput $input): ParserResult
             {
                 return ($this->parse)($input);

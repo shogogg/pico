@@ -7,25 +7,15 @@
  */
 declare(strict_types=1);
 
-namespace Pico\Internal;
+namespace Pico\Parsers;
 
 use Closure;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
-use Pico\Parsers\AbstractParser;
-use Pico\Parsers\AnyCharParser;
-use Pico\Parsers\ContextualParser;
-use Pico\Parsers\LazyParser;
-use Pico\Parsers\ParserInput;
-use Pico\Parsers\RegExpParser;
-use Pico\Parsers\StringParser;
-
-use function Pico\Parsers\failure;
-use function Pico\Parsers\success;
 
 /** @internal */
-final class CoreParsers
+final class Parsers
 {
     /** @var array<string, ContextualParser<string>> */
     private static array $parsers = [];
@@ -33,6 +23,32 @@ final class CoreParsers
     private function __construct()
     {
         // Nothing to do.
+    }
+
+    /**
+     * @internal
+     * @template T
+     * @param Closure(ParserInput): ParserResult<T> $parse
+     * @return ContextualParser<T>
+     */
+    public static function create(Closure $parse): ContextualParser
+    {
+        /** @extends AbstractParser<T> */
+        return new class ($parse) extends AbstractParser {
+            private readonly Closure $parse;
+
+            /** @param Closure(ParserInput): ParserResult<T> $parse */
+            public function __construct(Closure $parse)
+            {
+                $this->parse = $parse;
+            }
+
+            /** @return ParserResult<T> */
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return ($this->parse)($input);
+            }
+        };
     }
 
     /** @return ContextualParser<string> */
@@ -71,7 +87,7 @@ final class CoreParsers
             throw new ParserException('The character must be exactly one character long.');
         }
 
-        return AbstractParser::createParser(function (ParserInput $input) use ($char): ParserResult {
+        return self::create(function (ParserInput $input) use ($char): ParserResult {
             if ($input->isAtEnd()) {
                 return failure();
             }
@@ -89,7 +105,7 @@ final class CoreParsers
     /** @return ContextualParser<string> */
     public static function eof(): ContextualParser
     {
-        return self::memoize('eof', static fn (): ContextualParser => AbstractParser::createParser(
+        return self::memoize('eof', static fn (): ContextualParser => self::create(
             static fn (ParserInput $input): ParserResult => $input->isAtEnd() ? success('', 0) : failure(),
         ));
     }
@@ -115,7 +131,7 @@ final class CoreParsers
         }
         $characterSet = array_fill_keys(mb_str_split($characters, 1, 'UTF-8'), true);
 
-        return AbstractParser::createParser(static function (ParserInput $input) use ($characterSet): ParserResult {
+        return self::create(static function (ParserInput $input) use ($characterSet): ParserResult {
             if ($input->isAtEnd()) {
                 return failure();
             }
@@ -131,7 +147,7 @@ final class CoreParsers
      */
     public static function predicate(Closure $predicate): ContextualParser
     {
-        return AbstractParser::createParser(static function (ParserInput $input) use ($predicate): ParserResult {
+        return self::create(static function (ParserInput $input) use ($predicate): ParserResult {
             if ($input->isAtEnd()) {
                 return failure();
             }
@@ -158,7 +174,7 @@ final class CoreParsers
             throw new ParserException('The range start must not exceed the range end.');
         }
 
-        return AbstractParser::createParser(
+        return self::create(
             static function (ParserInput $input) use ($from, $to, $minCodePoint, $maxCodePoint): ParserResult {
                 if ($input->isAtEnd()) {
                     return failure();

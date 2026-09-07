@@ -7,22 +7,12 @@
  */
 declare(strict_types=1);
 
-namespace Pico\Internal;
+namespace Pico\Parsers;
 
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
-use Pico\Parsers\AbstractParser;
-use Pico\Parsers\BetweenParser;
-use Pico\Parsers\ContextualParser;
-use Pico\Parsers\ParserInput;
-use Pico\Parsers\SeqParser;
-use Pico\Parsers\SkipLeftParser;
-use Pico\Parsers\SkipParser;
-use Pico\Parsers\SkipRightParser;
-
-use function Pico\Parsers\failure;
-use function Pico\Parsers\success;
+use Pico\Internal\PicoInternal;
 
 /** @internal */
 final class Combinators
@@ -43,14 +33,13 @@ final class Combinators
         foreach ($parsers as $parser) {
             $contextualParsers[] = PicoInternal::asContextualParser($parser);
         }
-        return AbstractParser::createParser(function (ParserInput $input) use ($contextualParsers): ParserResult {
+        return Parsers::create(function (ParserInput $input) use ($contextualParsers): ParserResult {
             foreach ($contextualParsers as $parser) {
                 $result = $parser->parseInput($input);
                 if ($result->isSuccess()) {
                     return $result;
                 }
             }
-
             return failure();
         });
     }
@@ -90,38 +79,11 @@ final class Combinators
      */
     public static function pair(Parser $left, Parser $right, ?Parser $sep = null): ContextualParser
     {
-        $contextualLeft = PicoInternal::asContextualParser($left);
-        $contextualRight = PicoInternal::asContextualParser($right);
-        $contextualSeparator = $sep === null ? null : PicoInternal::asContextualParser($sep);
+        $parser = $sep === null
+            ? $left->then($right)
+            : $left->then(self::skipLeft($sep, $right));
 
-        return AbstractParser::createParser(
-            static function (ParserInput $input) use ($contextualLeft, $contextualRight, $contextualSeparator): ParserResult {
-                $leftResult = $contextualLeft->parseInput($input);
-                if ($leftResult->isFailure()) {
-                    return failure();
-                }
-
-                $consumedLength = $leftResult->consumedLength();
-                if ($contextualSeparator !== null) {
-                    $separatorResult = $contextualSeparator->parseInput($input->advanced($consumedLength));
-                    if ($separatorResult->isFailure()) {
-                        return failure();
-                    }
-
-                    $consumedLength += $separatorResult->consumedLength();
-                }
-
-                $rightResult = $contextualRight->parseInput($input->advanced($consumedLength));
-                if ($rightResult->isFailure()) {
-                    return failure();
-                }
-
-                return success(
-                    [$leftResult->output(), $rightResult->output()],
-                    $consumedLength + $rightResult->consumedLength(),
-                );
-            },
-        );
+        return PicoInternal::asContextualParser($parser);
     }
 
     /**
@@ -136,6 +98,7 @@ final class Combinators
         if ($min < 0) {
             throw new ParserException('The minimum item count must not be negative.');
         }
+
         $parser = $content
             ->then(self::skipLeft($separator, $content)->repeat())
             ->map(static fn (array $outputs): array => [$outputs[0], ...$outputs[1]], )

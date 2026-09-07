@@ -12,8 +12,8 @@ namespace Pico;
 use Closure;
 use Pico\Contracts\Parser;
 use Pico\Exceptions\ParserException;
-use Pico\Internal\Combinators;
-use Pico\Internal\CoreParsers;
+use Pico\Parsers\Combinators;
+use Pico\Parsers\Parsers;
 
 /**
  * Parser factory facade.
@@ -35,7 +35,7 @@ final class Pico
      */
     public static function alpha(): Parser
     {
-        return CoreParsers::alpha();
+        return Parsers::alpha();
     }
 
     /**
@@ -45,7 +45,7 @@ final class Pico
      */
     public static function alphaNum(): Parser
     {
-        return CoreParsers::alphaNum();
+        return Parsers::alphaNum();
     }
 
     /**
@@ -55,7 +55,7 @@ final class Pico
      */
     public static function anyChar(): Parser
     {
-        return CoreParsers::anyChar();
+        return Parsers::anyChar();
     }
 
     /**
@@ -77,7 +77,7 @@ final class Pico
      */
     public static function ascii(): Parser
     {
-        return CoreParsers::ascii();
+        return Parsers::ascii();
     }
 
     /**
@@ -103,7 +103,7 @@ final class Pico
      */
     public static function char(string $char): Parser
     {
-        return CoreParsers::char($char);
+        return Parsers::char($char);
     }
 
     /**
@@ -113,7 +113,7 @@ final class Pico
      */
     public static function digit(): Parser
     {
-        return CoreParsers::digit();
+        return Parsers::digit();
     }
 
     /**
@@ -123,7 +123,7 @@ final class Pico
      */
     public static function eof(): Parser
     {
-        return CoreParsers::eof();
+        return Parsers::eof();
     }
 
     /**
@@ -147,7 +147,7 @@ final class Pico
      */
     public static function lazy(Closure $factory): Parser
     {
-        return CoreParsers::lazy($factory);
+        return Parsers::lazy($factory);
     }
 
     /**
@@ -158,7 +158,7 @@ final class Pico
      */
     public static function oneOf(string $characters): Parser
     {
-        return CoreParsers::oneOf($characters);
+        return Parsers::oneOf($characters);
     }
 
     /**
@@ -185,7 +185,7 @@ final class Pico
      */
     public static function predicate(Closure $predicate): Parser
     {
-        return CoreParsers::predicate($predicate);
+        return Parsers::predicate($predicate);
     }
 
     /**
@@ -196,7 +196,7 @@ final class Pico
      */
     public static function range(string $from, string $to): Parser
     {
-        return CoreParsers::range($from, $to);
+        return Parsers::range($from, $to);
     }
 
     /**
@@ -206,7 +206,7 @@ final class Pico
      */
     public static function regexp(string $pattern): Parser
     {
-        return CoreParsers::regexp($pattern);
+        return Parsers::regexp($pattern);
     }
 
     /**
@@ -281,7 +281,7 @@ final class Pico
      */
     public static function string(string $expected): Parser
     {
-        return CoreParsers::string($expected);
+        return Parsers::string($expected);
     }
 
     /**
@@ -291,7 +291,7 @@ final class Pico
      */
     public static function whitespace(): Parser
     {
-        return CoreParsers::whitespace();
+        return Parsers::whitespace();
     }
 
     /**
@@ -301,6 +301,6 @@ final class Pico
      */
     public static function whitespaces(): Parser
     {
-        return CoreParsers::whitespaces();
+        return Parsers::whitespaces();
     }
 }
