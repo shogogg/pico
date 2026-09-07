@@ -51,7 +51,13 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function except(Parser $except): Parser
     {
-        return new ExceptParser($this, $except);
+        PicoInternal::ensureContextualParser($except);
+
+        return Parsers::create(function (ParserInput $input) use ($except): ParserResult {
+            return $except->parseInput($input)->isSuccess()
+                ? failure()
+                : $this->parseInput($input);
+        });
     }
 
     /** {@inheritDoc} */

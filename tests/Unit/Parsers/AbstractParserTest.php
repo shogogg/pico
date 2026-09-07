@@ -77,6 +77,40 @@ describe('AbstractParser::complete', function (): void {
     });
 });
 
+describe('AbstractParser::except', function (): void {
+    it('should fail without consuming input when the exclusion parser succeeds', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            Pico::string('apple')->except(Pico::char('a')),
+        )->parseInput(new ParserInput('apple'));
+
+        // Assert
+        expect($actual)
+            ->toBeFailure()
+            ->consumedLength()->toBe(0);
+    });
+
+    it('should return the parser result when the exclusion parser fails', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            Pico::char('a')->except(Pico::char('b')),
+        )->parseInput(new ParserInput('apple'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf('a', 1);
+    });
+
+    it('should return the parser failure when the exclusion parser fails', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            Pico::char('b')->except(Pico::char('c')),
+        )->parseInput(new ParserInput('apple'));
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+});
+
 describe('AbstractParser::repeat', function (): void {
     it('should reject a negative minimum repetition count', function (): void {
         // Act
