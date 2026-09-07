@@ -217,6 +217,51 @@ describe('AbstractParser::skip', function (): void {
     });
 });
 
+describe('AbstractParser::then', function (): void {
+    it('should combine successful outputs and consumed lengths', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            (new CharParser('A'))->then(new CharParser('B')),
+        )->parseInput(new ParserInput('ABC'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['A', 'B'], 2);
+    });
+
+    it('should not evaluate the right parser when the left parser fails', function (): void {
+        // Arrange
+        $right = new class () extends AbstractParser {
+            public bool $wasParsed = false;
+
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                $this->wasParsed = true;
+
+                return success('B', 1);
+            }
+        };
+
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            (new CharParser('A'))->then($right),
+        )->parseInput(new ParserInput('B'));
+
+        // Assert
+        expect($actual)->toBeFailure();
+        expect($right->wasParsed)->toBeFalse();
+    });
+
+    it('should fail when the right parser fails', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            (new CharParser('A'))->then(new CharParser('B')),
+        )->parseInput(new ParserInput('AC'));
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+});
+
 describe('AbstractParser::where', function (): void {
     it('should preserve a successful output when the predicate succeeds', function (): void {
         // Act

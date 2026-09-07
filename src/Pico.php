@@ -11,6 +11,7 @@ namespace Pico;
 
 use Closure;
 use Pico\Contracts\Parser;
+use Pico\Exceptions\ParserException;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
@@ -105,10 +106,7 @@ final class Pico
      */
     public static function anyChar(): Parser
     {
-        return self::memoize(
-            'anyChar',
-            static fn (): Parser => new AnyCharParser(),
-        );
+        return self::memoize('anyChar', static fn (): Parser => new AnyCharParser());
     }
 
     /**
@@ -213,11 +211,27 @@ final class Pico
      * Creates a parser that matches a character from the given UTF-8 character set.
      *
      * @return Parser<string>
-     * @throws \Pico\Exceptions\ParserException When the character set is empty or invalid UTF-8.
+     * @throws ParserException When the character set is empty or invalid UTF-8.
      */
     public static function oneOf(string $characters): Parser
     {
         return new OneOfParser($characters);
+    }
+
+    /**
+     * Creates a parser that combines the outputs of two sequential parsers.
+     *
+     * @template TLeft
+     * @template TRight
+     * @template TSeparator
+     * @param Parser<TLeft> $left
+     * @param Parser<TRight> $right
+     * @param Parser<TSeparator>|null $sep
+     * @return Parser<array{TLeft, TRight}>
+     */
+    public static function pair(Parser $left, Parser $right, ?Parser $sep = null): Parser
+    {
+        return $left->then($sep === null ? $right : self::skipLeft($sep, $right));
     }
 
     /**
@@ -235,7 +249,7 @@ final class Pico
      * Creates a parser that matches a character within the given Unicode code point range.
      *
      * @return Parser<string>
-     * @throws \Pico\Exceptions\ParserException When either bound is not one UTF-8 character or the range is invalid.
+     * @throws ParserException When either bound is not one UTF-8 character or the range is invalid.
      */
     public static function range(string $from, string $to): Parser
     {

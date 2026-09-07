@@ -7,6 +7,7 @@
  */
 declare(strict_types=1);
 
+use Pico\Contracts\Parser;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
@@ -304,6 +305,53 @@ describe('Pico::oneOf()', function (): void {
 
         // Assert
         expect($actual)->toBeSuccessOf('B', 1);
+    });
+});
+
+describe('Pico::pair()', function (): void {
+    it('should combine the outputs of two sequential parsers without a separator', function (): void {
+        // Act
+        $actual = Pico::pair(Pico::string('AB'), Pico::char('C'))->parse('ABCD');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['AB', 'C'], 3);
+    });
+
+    it('should discard a named separator while preserving the outputs and consumed length', function (): void {
+        // Act
+        $actual = Pico::pair(
+            Pico::string('key'),
+            Pico::string('value'),
+            sep: Pico::char(':'),
+        )->parse('key:value');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['key', 'value'], 9);
+    });
+
+    it('should not evaluate the right parser when the separator fails', function (): void {
+        // Arrange
+        $wasResolved = false;
+        $right = Pico::lazy(function () use (&$wasResolved): Parser {
+            $wasResolved = true;
+
+            return Pico::char('B');
+        });
+
+        // Act
+        $actual = Pico::pair(Pico::char('A'), $right, sep: Pico::char(':'))->parse('A;B');
+
+        // Assert
+        expect($actual)->toBeFailure();
+        expect($wasResolved)->toBeFalse();
+    });
+
+    it('should fail when either parser fails', function (): void {
+        // Act
+        $actual = Pico::pair(Pico::char('A'), Pico::char('B'))->parse('AC');
+
+        // Assert
+        expect($actual)->toBeFailure();
     });
 });
 

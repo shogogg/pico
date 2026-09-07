@@ -13,6 +13,7 @@ use Closure;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 
 /**
  * Base class for parsers that operate on a ParserInput.
@@ -136,6 +137,34 @@ abstract class AbstractParser implements Parser, ContextualParser
     final public function skip(): Parser
     {
         return $this->map(static fn (): string => '');
+    }
+
+    /**
+     * @template U
+     * @param Parser<U> $parser
+     * @return Parser<array{T, U}>
+     */
+    final public function then(Parser $parser): Parser
+    {
+        $right = PicoInternal::asContextualParser($parser);
+
+        return $this->createParser(function (ParserInput $input) use ($right): ParserResult {
+            $leftResult = $this->parseInput($input);
+            if ($leftResult->isFailure()) {
+                return failure();
+            }
+
+            $leftLength = $leftResult->consumedLength();
+            $rightResult = $right->parseInput($input->advanced($leftLength));
+            if ($rightResult->isFailure()) {
+                return failure();
+            }
+
+            return success(
+                [$leftResult->output(), $rightResult->output()],
+                $leftLength + $rightResult->consumedLength(),
+            );
+        });
     }
 
     /**

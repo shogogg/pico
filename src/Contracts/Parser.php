@@ -84,6 +84,15 @@ interface Parser
     public function skip(): Parser;
 
     /**
+     * Parses this parser followed by another parser.
+     *
+     * @template U
+     * @param Parser<U> $parser
+     * @return Parser<array{T, U}>
+     */
+    public function then(Parser $parser): Parser;
+
+    /**
      * Keeps successful results that satisfy the predicate.
      *
      * @param Closure(T): bool $predicate
