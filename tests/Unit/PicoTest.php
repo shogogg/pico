@@ -347,12 +347,42 @@ describe('Pico::lazy()', function (): void {
 });
 
 describe('Pico::oneOf()', function (): void {
-    it('should parse a character in the given character set', function (): void {
+    it('should reject an invalid UTF-8 character set', function (string $characters): void {
+        Pico::oneOf($characters);
+    })->with([
+        'invalid byte' => "\x80",
+        'incomplete multibyte character' => "\xE3\x81",
+    ])->throws(ParserException::class, 'The character set must be valid UTF-8.');
+
+    it('should reject an empty character set', function (): void {
+        Pico::oneOf('');
+    })->throws(ParserException::class, 'The character set must not be empty.');
+
+    it('should parse a character in the given character set', function (string $characters, string $input, string $expected): void {
         // Act
-        $actual = Pico::oneOf('ABC')->parse('BCD');
+        $actual = Pico::oneOf($characters)->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf('B', 1);
+        expect($actual)->toBeSuccessOf($expected, 1);
+    })->with([
+        'ASCII character' => ['ABC', 'BCD', 'B'],
+        'multibyte character' => ['あいう', 'いえお', 'い'],
+    ]);
+
+    it('should fail when the current character is not in the character set', function (): void {
+        // Act
+        $actual = Pico::oneOf('ABC')->parse('XYZ');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should fail at the end of input', function (): void {
+        // Act
+        $actual = Pico::oneOf('ABC')->parse('');
+
+        // Assert
+        expect($actual)->toBeFailure();
     });
 });
 

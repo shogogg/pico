@@ -19,7 +19,6 @@ use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\LazyParser;
-use Pico\Parsers\OneOfParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
@@ -241,7 +240,21 @@ final class Pico
      */
     public static function oneOf(string $characters): Parser
     {
-        return new OneOfParser($characters);
+        if (!mb_check_encoding($characters, 'UTF-8')) {
+            throw new ParserException('The character set must be valid UTF-8.');
+        }
+        if (mb_strlen($characters) === 0) {
+            throw new ParserException('The character set must not be empty.');
+        }
+        $characterSet = array_fill_keys(mb_str_split($characters, 1, 'UTF-8'), true);
+
+        return AbstractParser::createParser(static function (ParserInput $input) use ($characterSet): ParserResult {
+            if ($input->isAtEnd()) {
+                return failure();
+            }
+            $char = $input->current();
+            return isset($characterSet[$char]) ? success($char, 1) : failure();
+        });
     }
 
     /**
