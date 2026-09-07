@@ -26,32 +26,6 @@ final class Parsers
         // Nothing to do.
     }
 
-    /**
-     * @internal
-     * @template T
-     * @param Closure(ParserInput): ParserResult<T> $parse
-     * @return ContextualParser<T>
-     */
-    public static function create(Closure $parse): ContextualParser
-    {
-        /** @extends AbstractParser<T> */
-        return new class ($parse) extends AbstractParser {
-            private readonly Closure $parse;
-
-            /** @param Closure(ParserInput): ParserResult<T> $parse */
-            public function __construct(Closure $parse)
-            {
-                $this->parse = $parse;
-            }
-
-            /** @return ParserResult<T> */
-            public function parseInput(ParserInput $input): ParserResult
-            {
-                return ($this->parse)($input);
-            }
-        };
-    }
-
     /** @return ContextualParser<string> */
     public static function alpha(): ContextualParser
     {
@@ -83,7 +57,7 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function ascii(): ContextualParser
     {
-        return self::memoize('ascii', static fn (): ContextualParser => self::predicate(
+        return self::memoize('ascii', static fn (): ContextualParser => self::charWhere(
             static fn (string $char): bool => strlen($char) === 1,
         ));
     }
@@ -105,6 +79,48 @@ final class Parsers
 
             return $input->current() === $char ? success($char, 1) : failure();
         });
+    }
+
+    /**
+     * @param Closure(string): bool $predicate
+     * @return ContextualParser<string>
+     */
+    public static function charWhere(Closure $predicate): ContextualParser
+    {
+        return self::create(static function (ParserInput $input) use ($predicate): ParserResult {
+            if ($input->isAtEnd()) {
+                return failure();
+            }
+
+            $char = $input->current();
+            return $predicate($char) ? success($char, 1) : failure();
+        });
+    }
+
+    /**
+     * @internal
+     * @template T
+     * @param Closure(ParserInput): ParserResult<T> $parse
+     * @return ContextualParser<T>
+     */
+    public static function create(Closure $parse): ContextualParser
+    {
+        /** @extends AbstractParser<T> */
+        return new class ($parse) extends AbstractParser {
+            private readonly Closure $parse;
+
+            /** @param Closure(ParserInput): ParserResult<T> $parse */
+            public function __construct(Closure $parse)
+            {
+                $this->parse = $parse;
+            }
+
+            /** @return ParserResult<T> */
+            public function parseInput(ParserInput $input): ParserResult
+            {
+                return ($this->parse)($input);
+            }
+        };
     }
 
     /** @return ContextualParser<string> */
@@ -152,22 +168,6 @@ final class Parsers
 
             $char = $input->current();
             return isset($characterSet[$char]) ? success($char, 1) : failure();
-        });
-    }
-
-    /**
-     * @param Closure(string): bool $predicate
-     * @return ContextualParser<string>
-     */
-    public static function predicate(Closure $predicate): ContextualParser
-    {
-        return self::create(static function (ParserInput $input) use ($predicate): ParserResult {
-            if ($input->isAtEnd()) {
-                return failure();
-            }
-
-            $char = $input->current();
-            return $predicate($char) ? success($char, 1) : failure();
         });
     }
 
@@ -258,7 +258,9 @@ final class Parsers
     private static function memoize(string $key, Closure $init): ContextualParser
     {
         if (!isset(self::$parsers[$key])) {
-            self::$parsers[$key] = PicoInternal::asContextualParser($init());
+            $parser = $init();
+            assert($parser instanceof ContextualParser);
+            self::$parsers[$key] = $parser;
         }
         return self::$parsers[$key];
     }

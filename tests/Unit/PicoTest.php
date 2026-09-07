@@ -235,6 +235,56 @@ describe('Pico::char()', function (): void {
     ])->throws(ParserException::class, 'The character must be exactly one character long.');
 });
 
+describe('Pico::charWhere()', function (): void {
+    it('should parse a UTF-8 character satisfying the predicate', function (): void {
+        // Arrange
+        $received = '';
+        $parser = Pico::charWhere(function (string $char) use (&$received): bool {
+            $received = $char;
+
+            return $char === 'あ';
+        });
+
+        // Act
+        $actual = $parser->parse('あいう');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('あ', 1);
+        expect($received)->toBe('あ');
+    });
+
+    it('should fail when the current character does not satisfy the predicate', function (): void {
+        // Act
+        $actual = Pico::charWhere(static fn (string $char): bool => $char === 'あ')->parse('いうえお');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should fail at the end of input without evaluating the predicate', function (): void {
+        // Arrange
+        $wasEvaluated = false;
+        $parser = Pico::charWhere(function (string $char) use (&$wasEvaluated): bool {
+            $wasEvaluated = true;
+
+            return $char === 'あ';
+        });
+
+        // Act
+        $actual = $parser->parse('');
+
+        // Assert
+        expect($actual)->toBeFailure();
+        expect($wasEvaluated)->toBeFalse();
+    });
+
+    it('should propagate an exception raised by the predicate', function (): void {
+        Pico::charWhere(static function (string $char): bool {
+            throw new \LogicException("Unable to evaluate '{$char}'.");
+        })->parse('あいう');
+    })->throws(\LogicException::class, "Unable to evaluate 'あ'.");
+});
+
 describe('Pico::digit()', function (): void {
     it('should parse an ASCII decimal digit', function (string $input, string $expected): void {
         // Act
@@ -469,56 +519,6 @@ describe('Pico::triple()', function (): void {
         // Assert
         expect($actual)->toBeFailure();
     });
-});
-
-describe('Pico::predicate()', function (): void {
-    it('should parse a UTF-8 character satisfying the predicate', function (): void {
-        // Arrange
-        $received = '';
-        $parser = Pico::predicate(function (string $char) use (&$received): bool {
-            $received = $char;
-
-            return $char === 'あ';
-        });
-
-        // Act
-        $actual = $parser->parse('あいう');
-
-        // Assert
-        expect($actual)->toBeSuccessOf('あ', 1);
-        expect($received)->toBe('あ');
-    });
-
-    it('should fail when the current character does not satisfy the predicate', function (): void {
-        // Act
-        $actual = Pico::predicate(static fn (string $char): bool => $char === 'あ')->parse('いうえお');
-
-        // Assert
-        expect($actual)->toBeFailure();
-    });
-
-    it('should fail at the end of input without evaluating the predicate', function (): void {
-        // Arrange
-        $wasEvaluated = false;
-        $parser = Pico::predicate(function (string $char) use (&$wasEvaluated): bool {
-            $wasEvaluated = true;
-
-            return $char === 'あ';
-        });
-
-        // Act
-        $actual = $parser->parse('');
-
-        // Assert
-        expect($actual)->toBeFailure();
-        expect($wasEvaluated)->toBeFalse();
-    });
-
-    it('should propagate an exception raised by the predicate', function (): void {
-        Pico::predicate(static function (string $char): bool {
-            throw new \LogicException("Unable to evaluate '{$char}'.");
-        })->parse('あいう');
-    })->throws(\LogicException::class, "Unable to evaluate 'あ'.");
 });
 
 describe('Pico::range()', function (): void {

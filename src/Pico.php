@@ -107,6 +107,17 @@ final class Pico
     }
 
     /**
+     * Creates a parser that matches a character satisfying a condition.
+     *
+     * @param Closure(string): bool $predicate
+     * @return Parser<string>
+     */
+    public static function charWhere(Closure $predicate): Parser
+    {
+        return Parsers::charWhere($predicate);
+    }
+
+    /**
      * Creates a parser that matches any ASCII decimal digit.
      *
      * @return Parser<string>
@@ -175,17 +186,6 @@ final class Pico
     public static function pair(Parser $left, Parser $right, ?Parser $sep = null): Parser
     {
         return Combinators::pair($left, $right, $sep);
-    }
-
-    /**
-     * Creates a parser that matches a character satisfying the predicate.
-     *
-     * @param Closure(string): bool $predicate
-     * @return Parser<string>
-     */
-    public static function predicate(Closure $predicate): Parser
-    {
-        return Parsers::predicate($predicate);
     }
 
     /**
