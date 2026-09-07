@@ -55,7 +55,9 @@ final class Combinators
      */
     public static function between(Parser $open, Parser $close, Parser $content): ContextualParser
     {
-        return self::skipRight(self::skipLeft($open, $content), $close);
+        /** @var ContextualParser<TContent> $parser */
+        $parser = self::seq($open, $content, $close)->map(static fn (array $outputs): mixed => $outputs[1]);
+        return PicoInternal::asContextualParser($parser);
     }
 
     /**
@@ -157,7 +159,8 @@ final class Combinators
      */
     public static function skipLeft(Parser $left, Parser $right): ContextualParser
     {
-        return new SkipLeftParser($left, $right);
+        $parser = $left->then($right)->map(static fn (array $outputs): mixed => $outputs[1]);
+        return PicoInternal::asContextualParser($parser);
     }
 
     /**
@@ -169,6 +172,7 @@ final class Combinators
      */
     public static function skipRight(Parser $left, Parser $right): ContextualParser
     {
-        return new SkipRightParser($left, $right);
+        $parser = $left->then($right)->map(static fn (array $outputs): mixed => $outputs[0]);
+        return PicoInternal::asContextualParser($parser);
     }
 }

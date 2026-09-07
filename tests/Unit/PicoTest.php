@@ -13,8 +13,6 @@ use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\SeqParser;
-use Pico\Parsers\SkipLeftParser;
-use Pico\Parsers\SkipRightParser;
 use Pico\Parsers\StringParser;
 use Pico\Pico;
 
@@ -667,22 +665,54 @@ describe('Pico::skip()', function (): void {
 });
 
 describe('Pico::skipLeft()', function (): void {
-    it('should return a SkipLeftParser instance', function (): void {
+    it('should return the right output after consuming both parsers', function (): void {
         // Act
-        $actual = Pico::skipLeft(Pico::char(':'), Pico::char('A'));
+        $actual = Pico::skipLeft(Pico::char(':'), Pico::char('A'))->parse(':ABC');
 
         // Assert
-        expect($actual)->toBeInstanceOf(SkipLeftParser::class);
+        expect($actual)->toBeSuccessOf('A', 2);
+    });
+
+    it('should fail when the left parser fails', function (): void {
+        // Act
+        $actual = Pico::skipLeft(Pico::char(':'), Pico::char('A'))->parse('A');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should fail when the right parser fails', function (): void {
+        // Act
+        $actual = Pico::skipLeft(Pico::char(':'), Pico::char('A'))->parse(':B');
+
+        // Assert
+        expect($actual)->toBeFailure();
     });
 });
 
 describe('Pico::skipRight()', function (): void {
-    it('should return a SkipRightParser instance', function (): void {
+    it('should return the left output after consuming both parsers', function (): void {
         // Act
-        $actual = Pico::skipRight(Pico::char('A'), Pico::char(';'));
+        $actual = Pico::skipRight(Pico::char('A'), Pico::char(';'))->parse('A;');
 
         // Assert
-        expect($actual)->toBeInstanceOf(SkipRightParser::class);
+        expect($actual)->toBeSuccessOf('A', 2);
+    });
+
+    it('should fail when the left parser fails', function (): void {
+        // Act
+        $actual = Pico::skipRight(Pico::char('A'), Pico::char(';'))->parse('B;');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should fail when the right parser fails', function (): void {
+        // Act
+        $actual = Pico::skipRight(Pico::char('A'), Pico::char(';'))->parse('AB');
+
+        // Assert
+        expect($actual)->toBeFailure();
     });
 });
 
