@@ -38,17 +38,9 @@ abstract class AbstractParser implements Parser, ContextualParser
     {
         return self::createParser(function (ParserInput $input): ParserResult {
             $result = $this->parseInput($input);
-            if ($result->isFailure()) {
-                return $result;
-            }
-
-            $end = (new EofParser())->parseInput($input->advanced($result->consumedLength()));
-
-            if ($end->isFailure()) {
-                return failure();
-            }
-
-            return $result;
+            return $result->isFailure() || $input->advanced($result->consumedLength())->isAtEnd()
+                ? $result
+                : failure();
         });
     }
 
@@ -183,6 +175,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     }
 
     /**
+     * @internal
      * @template U
      * @param Closure(ParserInput): ParserResult<U> $parse
      * @return Parser<U>

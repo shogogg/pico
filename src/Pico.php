@@ -18,7 +18,6 @@ use Pico\Parsers\AbstractParser;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
-use Pico\Parsers\EofParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OneOfParser;
 use Pico\Parsers\ParserInput;
@@ -146,10 +145,9 @@ final class Pico
      */
     public static function ascii(): Parser
     {
-        return self::memoize(
-            'ascii',
-            static fn (): Parser => self::predicate(static fn (string $char): bool => strlen($char) === 1),
-        );
+        return self::memoize('ascii', static function (): Parser {
+            return self::predicate(static fn (string $char): bool => strlen($char) === 1);
+        });
     }
 
     /**
@@ -206,10 +204,9 @@ final class Pico
      */
     public static function eof(): Parser
     {
-        return self::memoize(
-            'eof',
-            static fn (): Parser => new EofParser(),
-        );
+        return self::memoize('eof', static fn (): Parser => AbstractParser::createParser(
+            static fn (ParserInput $input): ParserResult => $input->isAtEnd() ? success('', 0) : failure(),
+        ));
     }
 
     /**
