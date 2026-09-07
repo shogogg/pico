@@ -11,7 +11,10 @@ namespace Pico;
 
 use Closure;
 use Pico\Contracts\Parser;
+use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
+use Pico\Parsers\AbstractParser;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
@@ -19,6 +22,7 @@ use Pico\Parsers\CharParser;
 use Pico\Parsers\EofParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OneOfParser;
+use Pico\Parsers\ParserInput;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
@@ -28,6 +32,8 @@ use Pico\Parsers\SkipParser;
 use Pico\Parsers\SkipLeftParser;
 use Pico\Parsers\SkipRightParser;
 use Pico\Parsers\StringParser;
+
+use function Pico\Parsers\failure;
 
 /**
  * Parser factory facade.
@@ -118,7 +124,19 @@ final class Pico
      */
     public static function anyOf(Parser ...$parsers): Parser
     {
-        return new AnyOfParser(...$parsers);
+        $ps = [];
+        foreach ($parsers as $parser) {
+            $ps[] = PicoInternal::asContextualParser($parser);
+        }
+        return AbstractParser::createParser(function (ParserInput $input) use ($ps): ParserResult {
+            foreach ($ps as $p) {
+                $result = $p->parseInput($input);
+                if ($result->isSuccess()) {
+                    return $result;
+                }
+            }
+            return failure();
+        });
     }
 
     /**

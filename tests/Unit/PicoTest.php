@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 use Pico\Contracts\Parser;
 use Pico\Parsers\AnyCharParser;
-use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
@@ -109,21 +108,47 @@ describe('Pico::anyChar()', function (): void {
 });
 
 describe('Pico::anyOf()', function (): void {
-    it('should return an AnyOfParser instance', function (): void {
+    it('should return the first successful result and its consumed length', function (): void {
         // Act
-        $actual = Pico::anyOf(Pico::char('A'), Pico::digit());
+        $actual = Pico::anyOf(Pico::string('AB'), Pico::char('A'))->parse('ABC');
 
         // Assert
-        expect($actual)->toBeInstanceOf(AnyOfParser::class);
+        expect($actual)->toBeSuccessOf('AB', 2);
     });
 
-    it('should parse the first matching parser', function (): void {
+    it('should try the next parser after a failure', function (): void {
         // Act
-        $actual = Pico::anyOf(Pico::char('A'), Pico::digit())->parse('A1');
+        $actual = Pico::anyOf(Pico::char('Z'), Pico::char('A'))->parse('ABC');
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);
     });
+
+    it('should not evaluate parsers after a success', function (): void {
+        // Arrange
+        $wasResolved = false;
+        $second = Pico::lazy(function () use (&$wasResolved): Parser {
+            $wasResolved = true;
+
+            return Pico::char('B');
+        });
+
+        // Act
+        $actual = Pico::anyOf(Pico::char('A'), $second)->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('A', 1);
+        expect($wasResolved)->toBeFalse();
+    });
+
+    it('should fail when every parser fails', function (): void {
+        // Act
+        $actual = Pico::anyOf(Pico::char('X'), Pico::char('Y'))->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
 });
 
 describe('Pico::ascii()', function (): void {

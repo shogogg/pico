@@ -36,7 +36,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     /** {@inheritDoc} */
     final public function complete(): Parser
     {
-        return $this->createParser(function (ParserInput $input): ParserResult {
+        return self::createParser(function (ParserInput $input): ParserResult {
             $result = $this->parseInput($input);
             if ($result->isFailure()) {
                 return $result;
@@ -65,7 +65,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     /** {@inheritDoc} */
     final public function join(string $separator = ''): Parser
     {
-        return $this->createParser(
+        return self::createParser(
             fn (ParserInput $input): ParserResult => $this->parseInput($input)->join($separator),
         );
     }
@@ -77,7 +77,7 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function map(Closure $fn): Parser
     {
-        return $this->createParser(
+        return self::createParser(
             fn (ParserInput $input): ParserResult => $this->parseInput($input)->map($fn),
         );
     }
@@ -85,7 +85,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     /** {@inheritDoc} */
     final public function optional(): Parser
     {
-        return $this->createParser(function (ParserInput $input): ParserResult {
+        return self::createParser(function (ParserInput $input): ParserResult {
             $result = $this->parseInput($input);
             return $result->isSuccess() ? $result : success('', 0);
         });
@@ -101,7 +101,7 @@ abstract class AbstractParser implements Parser, ContextualParser
             throw new ParserException('The maximum repetition count must be at least the minimum repetition count.');
         }
 
-        return $this->createParser(function (ParserInput $input) use ($min, $max): ParserResult {
+        return self::createParser(function (ParserInput $input) use ($min, $max): ParserResult {
             /** @var list<T> $outputs */
             $outputs = [];
             $consumedLength = 0;
@@ -148,7 +148,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     {
         $right = PicoInternal::asContextualParser($parser);
 
-        return $this->createParser(function (ParserInput $input) use ($right): ParserResult {
+        return self::createParser(function (ParserInput $input) use ($right): ParserResult {
             $leftResult = $this->parseInput($input);
             if ($leftResult->isFailure()) {
                 return failure();
@@ -173,7 +173,7 @@ abstract class AbstractParser implements Parser, ContextualParser
      */
     final public function where(Closure $predicate): Parser
     {
-        return $this->createParser(function (ParserInput $input) use ($predicate): ParserResult {
+        return self::createParser(function (ParserInput $input) use ($predicate): ParserResult {
             $result = $this->parseInput($input);
             if ($result->isFailure()) {
                 return $result;
@@ -187,7 +187,7 @@ abstract class AbstractParser implements Parser, ContextualParser
      * @param Closure(ParserInput): ParserResult<U> $parse
      * @return Parser<U>
      */
-    private function createParser(Closure $parse): Parser
+    public static function createParser(Closure $parse): Parser
     {
         return new class ($parse) extends AbstractParser {
             private readonly Closure $parse;
