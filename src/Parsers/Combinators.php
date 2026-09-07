@@ -124,7 +124,28 @@ final class Combinators
      */
     public static function skip(Parser ...$parsers): ContextualParser
     {
-        return new SkipParser(...$parsers);
+        $contextualParsers = [];
+        foreach ($parsers as $parser) {
+            $contextualParsers[] = PicoInternal::asUntypedContextualParser($parser);
+        }
+
+        return Parsers::create(function (ParserInput $input) use ($contextualParsers): ParserResult {
+            $consumedLength = 0;
+            $currentInput = $input;
+
+            foreach ($contextualParsers as $parser) {
+                $result = $parser->parseInput($currentInput);
+                if ($result->isFailure()) {
+                    return $result;
+                }
+
+                $length = $result->consumedLength();
+                $consumedLength += $length;
+                $currentInput = $currentInput->advanced($length);
+            }
+
+            return success('', $consumedLength);
+        });
     }
 
     /**
