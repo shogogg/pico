@@ -13,7 +13,6 @@ use Pico\Exceptions\ParserException;
 use Pico\Internal\PicoInternal;
 use Pico\Parsers\AbstractParser;
 use Pico\Parsers\ParserInput;
-use Pico\Parsers\SeqParser;
 use Pico\Pico;
 
 use function Pico\Parsers\success;
@@ -141,8 +140,8 @@ describe('AbstractParser::repeat', function (): void {
     it('should stop when the parser succeeds without consuming input', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new SeqParser())->repeat(max: 2),
-        )->parseInput(new ParserInput('ABC'));
+            Pico::char('A')->optional()->repeat(max: 2),
+        )->parseInput(new ParserInput('BBB'));
 
         // Assert
         expect($actual)->toBeSuccessOf([], 0);

@@ -117,7 +117,30 @@ final class Combinators
      */
     public static function seq(Parser ...$parsers): ContextualParser
     {
-        return new SeqParser(...$parsers);
+        $contextualParsers = [];
+        foreach ($parsers as $parser) {
+            $contextualParsers[] = PicoInternal::asUntypedContextualParser($parser);
+        }
+
+        return Parsers::create(function (ParserInput $input) use ($contextualParsers): ParserResult {
+            $outputs = [];
+            $consumedLength = 0;
+            $currentInput = $input;
+
+            foreach ($contextualParsers as $parser) {
+                $result = $parser->parseInput($currentInput);
+                if ($result->isFailure()) {
+                    return $result;
+                }
+
+                $outputs[] = $result->output();
+                $length = $result->consumedLength();
+                $consumedLength += $length;
+                $currentInput = $currentInput->advanced($length);
+            }
+
+            return success($outputs, $consumedLength);
+        });
     }
 
     /**

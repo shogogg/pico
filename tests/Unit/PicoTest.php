@@ -12,7 +12,6 @@ use Pico\Exceptions\ParserException;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\RegExpParser;
-use Pico\Parsers\SeqParser;
 use Pico\Parsers\StringParser;
 use Pico\Pico;
 
@@ -680,20 +679,52 @@ describe('Pico::sepBy()', function (): void {
 });
 
 describe('Pico::seq()', function (): void {
-    it('should return a SeqParser instance', function (): void {
-        // Act
-        $actual = Pico::seq(Pico::char('A'), Pico::digit());
-
-        // Assert
-        expect($actual)->toBeInstanceOf(SeqParser::class);
-    });
-
     it('should parse each parser in sequence', function (): void {
         // Act
         $actual = Pico::seq(Pico::char('A'), Pico::digit())->parse('A123');
 
         // Assert
         expect($actual)->toBeSuccessOf(['A', '1'], 2);
+    });
+
+    it('should preserve outputs of different types in their original order', function (): void {
+        // Act
+        $actual = Pico::seq(
+            Pico::char('A'),
+            Pico::char('1')->map(static fn (): int => 1),
+            Pico::char('!')->map(static fn (): bool => true),
+        )->parse('A1!');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['A', 1, true], 3);
+    });
+
+    it('should fail when a parser in the sequence fails', function (string $input): void {
+        // Act
+        $actual = Pico::seq(Pico::char('A'), Pico::char('B'), Pico::char('C'))->parse($input);
+
+        // Assert
+        expect($actual)->toBeFailure();
+    })->with([
+        'XBC',
+        'AXC',
+        'ABX',
+    ]);
+
+    it('should preserve zero-length successful outputs', function (): void {
+        // Act
+        $actual = Pico::seq(Pico::char('A')->optional(), Pico::char('B'))->parse('B');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['', 'B'], 1);
+    });
+
+    it('should succeed without consuming input when an optional parser does not match', function (): void {
+        // Act
+        $actual = Pico::char('A')->optional()->parse('BC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('', 0);
     });
 });
 
