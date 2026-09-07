@@ -53,7 +53,7 @@ final class Pico
      * Creates a memoized parser.
      *
      * @template T
-     * @param string $key
+     * @param non-empty-string $key
      * @param Closure(): Parser<T> $init
      * @return Parser<T>
      */
@@ -68,7 +68,7 @@ final class Pico
     /**
      * Creates a parser that matches an ASCII character satisfying the predicate.
      *
-     * @param string $key
+     * @param non-empty-string $key
      * @param Closure(string): bool $predicate
      * @return Parser<string>
      */
