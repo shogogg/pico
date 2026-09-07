@@ -13,6 +13,7 @@ use Closure;
 use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
+use Pico\Internal\PicoInternal;
 
 /** @internal */
 final class Parsers
@@ -54,13 +55,19 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function alpha(): ContextualParser
     {
-        return self::createAsciiParser('alpha', ctype_alpha(...));
+        return self::memoize(
+            'alpha',
+            fn (): Parser => self::ascii()->where(ctype_alpha(...)),
+        );
     }
 
     /** @return ContextualParser<string> */
     public static function alphaNum(): ContextualParser
     {
-        return self::createAsciiParser('alphaNum', ctype_alnum(...));
+        return self::memoize(
+            'alphaNum',
+            static fn (): Parser => self::ascii()->where(ctype_alnum(...)),
+        );
     }
 
     /** @return ContextualParser<string> */
@@ -103,7 +110,10 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function digit(): ContextualParser
     {
-        return self::createAsciiParser('digit', ctype_digit(...));
+        return self::memoize(
+            'digit',
+            static fn (): Parser => self::ascii()->where(ctype_digit(...)),
+        );
     }
 
     /** @return ContextualParser<string> */
@@ -225,38 +235,31 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function whitespace(): ContextualParser
     {
-        return self::createAsciiParser('whitespace', ctype_space(...));
+        return self::memoize(
+            'whitespace',
+            static fn (): Parser => self::ascii()->where(ctype_space(...)),
+        );
     }
 
     /** @return ContextualParser<string> */
     public static function whitespaces(): ContextualParser
     {
-        return self::memoize('whitespaces', static fn (): ContextualParser => self::regexp('[ \\t\\r\\n\\f\\v]+'));
+        return self::memoize(
+            'whitespaces',
+            static fn (): ContextualParser => self::regexp('[ \\t\\r\\n\\f\\v]+'),
+        );
     }
 
     /**
      * @param non-empty-string $key
-     * @param Closure(string): bool $predicate
-     * @return ContextualParser<string>
-     */
-    private static function createAsciiParser(string $key, Closure $predicate): ContextualParser
-    {
-        return self::memoize($key, static fn (): ContextualParser => self::predicate(
-            static fn (string $char): bool => strlen($char) === 1 && $predicate($char),
-        ));
-    }
-
-    /**
-     * @param non-empty-string $key
-     * @param Closure(): ContextualParser<string> $init
+     * @param Closure(): Parser<string> $init
      * @return ContextualParser<string>
      */
     private static function memoize(string $key, Closure $init): ContextualParser
     {
         if (!isset(self::$parsers[$key])) {
-            self::$parsers[$key] = $init();
+            self::$parsers[$key] = PicoInternal::asContextualParser($init());
         }
-
         return self::$parsers[$key];
     }
 }
