@@ -49,6 +49,11 @@ describe('PicoInternal::ensureContextualParser()', function (): void {
                 return $this;
             }
 
+            public function orElse(\Closure $fallback): Parser
+            {
+                return $this;
+            }
+
             public function skip(): Parser
             {
                 return $this;
@@ -141,6 +146,11 @@ describe('PicoInternal::asContextualParser()', function (): void {
             }
 
             public function optional(): Parser
+            {
+                return $this;
+            }
+
+            public function orElse(\Closure $fallback): Parser
             {
                 return $this;
             }

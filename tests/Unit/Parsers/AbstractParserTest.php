@@ -199,6 +199,46 @@ describe('AbstractParser::optional', function (): void {
     });
 });
 
+describe('AbstractParser::orElse', function (): void {
+    it('should preserve the original successful result without evaluating the fallback', function (): void {
+        // Arrange
+        $wasCalled = false;
+
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            Pico::char('A')->orElse(function () use (&$wasCalled): string {
+                $wasCalled = true;
+
+                return 'fallback';
+            }),
+        )->parseInput(new ParserInput('ABC'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf('A', 1);
+        expect($wasCalled)->toBeFalse();
+    });
+
+    it('should return the fallback output without consuming input when parsing fails', function (): void {
+        // Act
+        $actual = PicoInternal::asContextualParser(
+            Pico::char('A')->orElse(static fn (): string => 'fallback'),
+        )->parseInput(new ParserInput('BBB'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf('fallback', 0);
+    });
+
+    it('should propagate a fallback exception', function (): void {
+        // Act
+        $action = static fn (): ParserResult => Pico::char('A')
+            ->orElse(static fn (): never => throw new ParserException('Fallback failed.'))
+            ->parse('B');
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'Fallback failed.');
+    });
+});
+
 describe('AbstractParser::skip', function (): void {
     it('should discard the output while preserving the consumed length', function (): void {
         // Act

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Pico\Parsers;
 
+use Pico\Contracts\Parser;
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserInputException;
 
@@ -16,9 +17,10 @@ use Pico\Exceptions\ParserInputException;
  * Contract for parsers that parse a ParserInput.
  *
  * @template-covariant T
+ * @extends Parser<T>
  * @internal
  */
-interface ContextualParser
+interface ContextualParser extends Parser
 {
     /**
      * Parses the input at its current offset.

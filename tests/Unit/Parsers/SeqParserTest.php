@@ -26,6 +26,18 @@ describe('SeqParser::parseInput', function (): void {
         expect($actual)->toBeSuccessOf(['A', 'B', 'C'], 3);
     });
 
+    it('should preserve outputs of different types in their original order', function (): void {
+        // Act
+        $actual = new SeqParser(
+            Pico::char('A'),
+            Pico::char('1')->map(static fn (): int => 1),
+            Pico::char('!')->map(static fn (): bool => true),
+        )->parseInput(new ParserInput('A1!'));
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['A', 1, true], 3);
+    });
+
     it('should fail when a parser in the sequence fails', function (string $input): void {
         // Act
         $actual = new SeqParser(

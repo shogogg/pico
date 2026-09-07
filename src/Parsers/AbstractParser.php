@@ -83,6 +83,19 @@ abstract class AbstractParser implements Parser, ContextualParser
         });
     }
 
+    /**
+     * @template U
+     * @param Closure(): U $fallback
+     * @return Parser<T|U>
+     */
+    final public function orElse(Closure $fallback): Parser
+    {
+        return self::createParser(function (ParserInput $input) use ($fallback): ParserResult {
+            $result = $this->parseInput($input);
+            return $result->isSuccess() ? $result : success($fallback(), 0);
+        });
+    }
+
     /** {@inheritDoc} */
     final public function repeat(int $min = 0, int $max = PHP_INT_MAX): Parser
     {
@@ -178,9 +191,9 @@ abstract class AbstractParser implements Parser, ContextualParser
      * @internal
      * @template U
      * @param Closure(ParserInput): ParserResult<U> $parse
-     * @return Parser<U>
+     * @return ContextualParser<U>
      */
-    public static function createParser(Closure $parse): Parser
+    public static function createParser(Closure $parse): ContextualParser
     {
         return new class ($parse) extends AbstractParser {
             private readonly Closure $parse;

@@ -77,6 +77,15 @@ interface Parser
     public function optional(): Parser;
 
     /**
+     * Returns a fallback value when parsing fails.
+     *
+     * @template U
+     * @param Closure(): U $fallback
+     * @return Parser<T|U>
+     */
+    public function orElse(Closure $fallback): Parser;
+
+    /**
      * Discards the output of a successful parse.
      *
      * @return Parser<string>

@@ -13,7 +13,6 @@ use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\RegExpParser;
-use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
 use Pico\Parsers\SkipLeftParser;
 use Pico\Parsers\SkipRightParser;
@@ -543,20 +542,68 @@ describe('Pico::regexp()', function (): void {
 });
 
 describe('Pico::sepBy()', function (): void {
-    it('should return a SepByParser instance', function (): void {
-        // Act
-        $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','));
-
-        // Assert
-        expect($actual)->toBeInstanceOf(SepByParser::class);
-    });
-
     it('should parse content separated by the given parser', function (): void {
         // Act
         $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','))->parse('1,22,333x');
 
         // Assert
         expect($actual)->toBeSuccessOf(['1', '22', '333'], 8);
+    });
+
+    it('should succeed with no outputs when the first content parser fails and the minimum is zero', function (): void {
+        // Act
+        $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','))->parse('abc');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([], 0);
+    });
+
+    it('should fail when fewer than the minimum item count matches', function (): void {
+        // Act
+        $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','), min: 2)->parse('1x');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should reject a negative minimum item count', function (): void {
+        // Act
+        $action = static fn (): Parser => Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','), min: -1);
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'The minimum item count must not be negative.');
+    });
+
+    it('should not consume a trailing separator when the following content parser fails', function (): void {
+        // Act
+        $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','))->parse('1,');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['1'], 1);
+    });
+
+    it('should continue when an optional content parser consumes no input', function (): void {
+        // Act
+        $actual = Pico::sepBy(Pico::char('A')->optional(), Pico::char(','))->parse(',x');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['', ''], 1);
+    });
+
+    it('should continue when an optional separator parser consumes no input', function (): void {
+        // Act
+        $actual = Pico::sepBy(Pico::char('A'), Pico::char(',')->optional())->parse('AAA');
+
+        // Assert
+        expect($actual)->toBeSuccessOf(['A', 'A', 'A'], 3);
+    });
+
+    it('should stop when neither optional parser consumes input', function (): void {
+        // Act
+        $actual = Pico::sepBy(Pico::char('A')->optional(), Pico::char(',')->optional())->parse('anything');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([''], 0);
     });
 });
 

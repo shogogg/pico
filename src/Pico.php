@@ -11,38 +11,15 @@ namespace Pico;
 
 use Closure;
 use Pico\Contracts\Parser;
-use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
-use Pico\Internal\PicoInternal;
-use Pico\Parsers\AbstractParser;
-use Pico\Parsers\AnyCharParser;
-use Pico\Parsers\AnyOfParser;
-use Pico\Parsers\BetweenParser;
-use Pico\Parsers\LazyParser;
-use Pico\Parsers\ParserInput;
-use Pico\Parsers\RegExpParser;
-use Pico\Parsers\SepByParser;
-use Pico\Parsers\SeqParser;
-use Pico\Parsers\SkipParser;
-use Pico\Parsers\SkipLeftParser;
-use Pico\Parsers\SkipRightParser;
-use Pico\Parsers\StringParser;
-
-use function Pico\Parsers\failure;
-use function Pico\Parsers\success;
+use Pico\Internal\Combinators;
+use Pico\Internal\CoreParsers;
 
 /**
  * Parser factory facade.
  */
 final class Pico
 {
-    /**
-     * Memoized parsers.
-     *
-     * @var array<string, Parser<mixed>>
-     */
-    private static array $parsers = [];
-
     /**
      * {@see Pico} constructor.
      */
@@ -52,43 +29,13 @@ final class Pico
     }
 
     /**
-     * Creates a memoized parser.
-     *
-     * @template T
-     * @param non-empty-string $key
-     * @param Closure(): Parser<T> $init
-     * @return Parser<T>
-     */
-    private static function memoize(string $key, Closure $init): Parser
-    {
-        if (!isset(self::$parsers[$key])) {
-            self::$parsers[$key] = $init();
-        }
-        return self::$parsers[$key];
-    }
-
-    /**
-     * Creates a parser that matches an ASCII character satisfying the predicate.
-     *
-     * @param non-empty-string $key
-     * @param Closure(string): bool $predicate
-     * @return Parser<string>
-     */
-    private static function createAsciiParser(string $key, Closure $predicate): Parser
-    {
-        return self::memoize($key, static fn (): Parser => self::predicate(
-            static fn (string $char): bool => strlen($char) === 1 && $predicate($char),
-        ));
-    }
-
-    /**
      * Creates a parser that matches any ASCII alphabetic character.
      *
      * @return Parser<string>
      */
     public static function alpha(): Parser
     {
-        return self::createAsciiParser('alpha', ctype_alpha(...));
+        return CoreParsers::alpha();
     }
 
     /**
@@ -98,7 +45,7 @@ final class Pico
      */
     public static function alphaNum(): Parser
     {
-        return self::createAsciiParser('alphaNum', ctype_alnum(...));
+        return CoreParsers::alphaNum();
     }
 
     /**
@@ -108,7 +55,7 @@ final class Pico
      */
     public static function anyChar(): Parser
     {
-        return self::memoize('anyChar', static fn (): Parser => new AnyCharParser());
+        return CoreParsers::anyChar();
     }
 
     /**
@@ -120,19 +67,7 @@ final class Pico
      */
     public static function anyOf(Parser ...$parsers): Parser
     {
-        $ps = [];
-        foreach ($parsers as $parser) {
-            $ps[] = PicoInternal::asContextualParser($parser);
-        }
-        return AbstractParser::createParser(function (ParserInput $input) use ($ps): ParserResult {
-            foreach ($ps as $p) {
-                $result = $p->parseInput($input);
-                if ($result->isSuccess()) {
-                    return $result;
-                }
-            }
-            return failure();
-        });
+        return Combinators::anyOf(...$parsers);
     }
 
     /**
@@ -142,9 +77,7 @@ final class Pico
      */
     public static function ascii(): Parser
     {
-        return self::memoize('ascii', static function (): Parser {
-            return self::predicate(static fn (string $char): bool => strlen($char) === 1);
-        });
+        return CoreParsers::ascii();
     }
 
     /**
@@ -160,7 +93,7 @@ final class Pico
      */
     public static function between(Parser $open, Parser $close, Parser $content): Parser
     {
-        return new BetweenParser($open, $close, $content);
+        return Combinators::between($open, $close, $content);
     }
 
     /**
@@ -170,18 +103,7 @@ final class Pico
      */
     public static function char(string $char): Parser
     {
-        if (!mb_check_encoding($char, 'UTF-8')) {
-            throw new ParserException('The character must be valid UTF-8.');
-        }
-        if (mb_strlen($char) !== 1) {
-            throw new ParserException('The character must be exactly one character long.');
-        }
-        return AbstractParser::createParser(function (ParserInput $input) use ($char): ParserResult {
-            if ($input->isAtEnd()) {
-                return failure();
-            }
-            return $input->current() === $char ? success($char, 1) : failure();
-        });
+        return CoreParsers::char($char);
     }
 
     /**
@@ -191,7 +113,7 @@ final class Pico
      */
     public static function digit(): Parser
     {
-        return self::createAsciiParser('digit', ctype_digit(...));
+        return CoreParsers::digit();
     }
 
     /**
@@ -201,9 +123,7 @@ final class Pico
      */
     public static function eof(): Parser
     {
-        return self::memoize('eof', static fn (): Parser => AbstractParser::createParser(
-            static fn (ParserInput $input): ParserResult => $input->isAtEnd() ? success('', 0) : failure(),
-        ));
+        return CoreParsers::eof();
     }
 
     /**
@@ -215,7 +135,7 @@ final class Pico
      */
     public static function join(Parser ...$parsers): Parser
     {
-        return self::seq(...$parsers)->join();
+        return Combinators::join(...$parsers);
     }
 
     /**
@@ -227,7 +147,7 @@ final class Pico
      */
     public static function lazy(Closure $factory): Parser
     {
-        return new LazyParser($factory);
+        return CoreParsers::lazy($factory);
     }
 
     /**
@@ -238,21 +158,7 @@ final class Pico
      */
     public static function oneOf(string $characters): Parser
     {
-        if (!mb_check_encoding($characters, 'UTF-8')) {
-            throw new ParserException('The character set must be valid UTF-8.');
-        }
-        if (mb_strlen($characters) === 0) {
-            throw new ParserException('The character set must not be empty.');
-        }
-        $characterSet = array_fill_keys(mb_str_split($characters, 1, 'UTF-8'), true);
-
-        return AbstractParser::createParser(static function (ParserInput $input) use ($characterSet): ParserResult {
-            if ($input->isAtEnd()) {
-                return failure();
-            }
-            $char = $input->current();
-            return isset($characterSet[$char]) ? success($char, 1) : failure();
-        });
+        return CoreParsers::oneOf($characters);
     }
 
     /**
@@ -268,7 +174,7 @@ final class Pico
      */
     public static function pair(Parser $left, Parser $right, ?Parser $sep = null): Parser
     {
-        return $left->then($sep === null ? $right : self::skipLeft($sep, $right));
+        return Combinators::pair($left, $right, $sep);
     }
 
     /**
@@ -279,13 +185,7 @@ final class Pico
      */
     public static function predicate(Closure $predicate): Parser
     {
-        return AbstractParser::createParser(static function (ParserInput $input) use ($predicate): ParserResult {
-            if ($input->isAtEnd()) {
-                return failure();
-            }
-            $char = $input->current();
-            return $predicate($char) ? success($char, 1) : failure();
-        });
+        return CoreParsers::predicate($predicate);
     }
 
     /**
@@ -296,39 +196,7 @@ final class Pico
      */
     public static function range(string $from, string $to): Parser
     {
-        if (!mb_check_encoding($from, 'UTF-8') || !mb_check_encoding($to, 'UTF-8')) {
-            throw new ParserException('Range bounds must be valid UTF-8.');
-        }
-        if (mb_strlen($from, 'UTF-8') !== 1 || mb_strlen($to, 'UTF-8') !== 1) {
-            throw new ParserException('Range bounds must be exactly one UTF-8 character.');
-        }
-
-        $minCodePoint = mb_ord($from, 'UTF-8');
-        $maxCodePoint = mb_ord($to, 'UTF-8');
-
-        if ($minCodePoint > $maxCodePoint) {
-            throw new ParserException('The range start must not exceed the range end.');
-        }
-
-        return AbstractParser::createParser(
-            static function (ParserInput $input) use ($from, $to, $minCodePoint, $maxCodePoint): ParserResult {
-                if ($input->isAtEnd()) {
-                    return failure();
-                }
-
-                $char = $input->current();
-
-                if ($char === $from || $char === $to) {
-                    return success($char, 1);
-                }
-
-                $codePoint = mb_ord($char, 'UTF-8');
-
-                return $codePoint >= $minCodePoint && $codePoint <= $maxCodePoint
-                    ? success($char, 1)
-                    : failure();
-            },
-        );
+        return CoreParsers::range($from, $to);
     }
 
     /**
@@ -338,7 +206,7 @@ final class Pico
      */
     public static function regexp(string $pattern): Parser
     {
-        return new RegExpParser($pattern);
+        return CoreParsers::regexp($pattern);
     }
 
     /**
@@ -352,7 +220,7 @@ final class Pico
      */
     public static function sepBy(Parser $content, Parser $separator, int $min = 0): Parser
     {
-        return new SepByParser($content, $separator, $min);
+        return Combinators::sepBy($content, $separator, $min);
     }
 
     /**
@@ -364,7 +232,7 @@ final class Pico
      */
     public static function seq(Parser ...$parsers): Parser
     {
-        return new SeqParser(...$parsers);
+        return Combinators::seq(...$parsers);
     }
 
     /**
@@ -375,7 +243,7 @@ final class Pico
      */
     public static function skip(Parser ...$parsers): Parser
     {
-        return new SkipParser(...$parsers);
+        return Combinators::skip(...$parsers);
     }
 
     /**
@@ -389,7 +257,7 @@ final class Pico
      */
     public static function skipLeft(Parser $left, Parser $right): Parser
     {
-        return new SkipLeftParser($left, $right);
+        return Combinators::skipLeft($left, $right);
     }
 
     /**
@@ -403,7 +271,7 @@ final class Pico
      */
     public static function skipRight(Parser $left, Parser $right): Parser
     {
-        return new SkipRightParser($left, $right);
+        return Combinators::skipRight($left, $right);
     }
 
     /**
@@ -413,7 +281,7 @@ final class Pico
      */
     public static function string(string $expected): Parser
     {
-        return new StringParser($expected);
+        return CoreParsers::string($expected);
     }
 
     /**
@@ -423,7 +291,7 @@ final class Pico
      */
     public static function whitespace(): Parser
     {
-        return self::createAsciiParser('whitespace', ctype_space(...));
+        return CoreParsers::whitespace();
     }
 
     /**
@@ -433,9 +301,6 @@ final class Pico
      */
     public static function whitespaces(): Parser
     {
-        return self::memoize(
-            'whitespaces',
-            static fn (): Parser => self::regexp('[ \t\r\n\f\v]+'),
-        );
+        return CoreParsers::whitespaces();
     }
 }
