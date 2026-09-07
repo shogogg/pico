@@ -12,7 +12,6 @@ use Pico\Exceptions\ParserException;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\LazyParser;
-use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
@@ -451,14 +450,6 @@ describe('Pico::predicate()', function (): void {
 });
 
 describe('Pico::range()', function (): void {
-    it('should return a RangeParser instance', function (): void {
-        // Act
-        $actual = Pico::range('あ', 'お');
-
-        // Assert
-        expect($actual)->toBeInstanceOf(RangeParser::class);
-    });
-
     it('should parse a character within the range', function (string $input, string $expected): void {
         // Act
         $actual = Pico::range('あ', 'お')->parse($input);
@@ -470,6 +461,14 @@ describe('Pico::range()', function (): void {
         'range middle' => ['えお', 'え'],
         'range end' => ['おかき', 'お'],
     ]);
+
+    it('should parse an emoji within the range', function (): void {
+        // Act
+        $actual = Pico::range('😀', '😂')->parse('😁!');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('😁', 1);
+    });
 
     it('should fail for a character outside the range', function (string $input): void {
         // Act
@@ -483,12 +482,33 @@ describe('Pico::range()', function (): void {
         'after range' => 'かきく',
     ]);
 
-    it('should reject bounds that are not exactly one UTF-8 character', function (string $from, string $to): void {
+    it('should fail at the end of input', function (): void {
         // Act
-        $action = static fn (): \Pico\Contracts\Parser => Pico::range($from, $to);
+        $actual = Pico::range('a', 'z')->parse('');
 
         // Assert
-        expect($action)->toThrow(\Pico\Exceptions\ParserException::class, 'Range bounds must be exactly one UTF-8 character.');
+        expect($actual)->toBeFailure();
+    });
+
+    it('should reject invalid UTF-8 bounds', function (string $from, string $to): void {
+        // Act
+        $action = static fn (): Parser => Pico::range($from, $to);
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'Range bounds must be valid UTF-8.');
+    })->with([
+        'invalid byte start' => ["\x80", 'z'],
+        'incomplete multibyte start' => ["\xE3\x81", 'z'],
+        'invalid byte end' => ['a', "\x80"],
+        'incomplete multibyte end' => ['a', "\xE3\x81"],
+    ]);
+
+    it('should reject bounds that are not exactly one UTF-8 character', function (string $from, string $to): void {
+        // Act
+        $action = static fn (): Parser => Pico::range($from, $to);
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'Range bounds must be exactly one UTF-8 character.');
     })->with([
         'empty start' => ['', 'z'],
         'multiple-character start' => ['ab', 'z'],
@@ -497,10 +517,10 @@ describe('Pico::range()', function (): void {
 
     it('should reject a range whose start exceeds its end', function (): void {
         // Act
-        $action = static fn (): \Pico\Contracts\Parser => Pico::range('z', 'a');
+        $action = static fn (): Parser => Pico::range('z', 'a');
 
         // Assert
-        expect($action)->toThrow(\Pico\Exceptions\ParserException::class, 'The range start must not exceed the range end.');
+        expect($action)->toThrow(ParserException::class, 'The range start must not exceed the range end.');
     });
 });
 

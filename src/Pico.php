@@ -20,7 +20,6 @@ use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\ParserInput;
-use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\SepByParser;
 use Pico\Parsers\SeqParser;
@@ -297,7 +296,39 @@ final class Pico
      */
     public static function range(string $from, string $to): Parser
     {
-        return new RangeParser($from, $to);
+        if (!mb_check_encoding($from, 'UTF-8') || !mb_check_encoding($to, 'UTF-8')) {
+            throw new ParserException('Range bounds must be valid UTF-8.');
+        }
+        if (mb_strlen($from, 'UTF-8') !== 1 || mb_strlen($to, 'UTF-8') !== 1) {
+            throw new ParserException('Range bounds must be exactly one UTF-8 character.');
+        }
+
+        $minCodePoint = mb_ord($from, 'UTF-8');
+        $maxCodePoint = mb_ord($to, 'UTF-8');
+
+        if ($minCodePoint > $maxCodePoint) {
+            throw new ParserException('The range start must not exceed the range end.');
+        }
+
+        return AbstractParser::createParser(
+            static function (ParserInput $input) use ($from, $to, $minCodePoint, $maxCodePoint): ParserResult {
+                if ($input->isAtEnd()) {
+                    return failure();
+                }
+
+                $char = $input->current();
+
+                if ($char === $from || $char === $to) {
+                    return success($char, 1);
+                }
+
+                $codePoint = mb_ord($char, 'UTF-8');
+
+                return $codePoint >= $minCodePoint && $codePoint <= $maxCodePoint
+                    ? success($char, 1)
+                    : failure();
+            },
+        );
     }
 
     /**
