@@ -20,7 +20,6 @@ use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\ParserInput;
-use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\SepByParser;
@@ -281,7 +280,13 @@ final class Pico
      */
     public static function predicate(Closure $predicate): Parser
     {
-        return new PredicateParser($predicate);
+        return AbstractParser::createParser(static function (ParserInput $input) use ($predicate): ParserResult {
+            if ($input->isAtEnd()) {
+                return failure();
+            }
+            $char = $input->current();
+            return $predicate($char) ? success($char, 1) : failure();
+        });
     }
 
     /**

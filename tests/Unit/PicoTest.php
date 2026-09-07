@@ -12,7 +12,6 @@ use Pico\Exceptions\ParserException;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\BetweenParser;
 use Pico\Parsers\LazyParser;
-use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\SepByParser;
@@ -23,14 +22,6 @@ use Pico\Parsers\StringParser;
 use Pico\Pico;
 
 describe('Pico::alpha()', function (): void {
-    it('should return a PredicateParser instance', function (): void {
-        // Act
-        $actual = Pico::alpha();
-
-        // Assert
-        expect($actual)->toBeInstanceOf(PredicateParser::class);
-    });
-
     it('should parse an ASCII alphabetic character', function (string $input, string $expected): void {
         // Act
         $actual = Pico::alpha()->parse($input);
@@ -56,14 +47,6 @@ describe('Pico::alpha()', function (): void {
 });
 
 describe('Pico::alphaNum()', function (): void {
-    it('should return a PredicateParser instance', function (): void {
-        // Act
-        $actual = Pico::alphaNum();
-
-        // Assert
-        expect($actual)->toBeInstanceOf(PredicateParser::class);
-    });
-
     it('should parse an ASCII alphanumeric character', function (string $input, string $expected): void {
         // Act
         $actual = Pico::alphaNum()->parse($input);
@@ -152,14 +135,6 @@ describe('Pico::anyOf()', function (): void {
 });
 
 describe('Pico::ascii()', function (): void {
-    it('should return a PredicateParser instance', function (): void {
-        // Act
-        $actual = Pico::ascii();
-
-        // Assert
-        expect($actual)->toBeInstanceOf(PredicateParser::class);
-    });
-
     it('should parse an ASCII character', function (): void {
         // Act
         $actual = Pico::ascii()->parse('ABC');
@@ -249,14 +224,6 @@ describe('Pico::char()', function (): void {
 });
 
 describe('Pico::digit()', function (): void {
-    it('should return a PredicateParser instance', function (): void {
-        // Act
-        $actual = Pico::digit();
-
-        // Assert
-        expect($actual)->toBeInstanceOf(PredicateParser::class);
-    });
-
     it('should parse an ASCII decimal digit', function (string $input, string $expected): void {
         // Act
         $actual = Pico::digit()->parse($input);
@@ -434,21 +401,53 @@ describe('Pico::pair()', function (): void {
 });
 
 describe('Pico::predicate()', function (): void {
-    it('should return a PredicateParser instance', function (): void {
+    it('should parse a UTF-8 character satisfying the predicate', function (): void {
+        // Arrange
+        $received = '';
+        $parser = Pico::predicate(function (string $char) use (&$received): bool {
+            $received = $char;
+
+            return $char === 'あ';
+        });
+
         // Act
-        $actual = Pico::predicate(static fn (string $char): bool => $char === 'x');
+        $actual = $parser->parse('あいう');
 
         // Assert
-        expect($actual)->toBeInstanceOf(PredicateParser::class);
+        expect($actual)->toBeSuccessOf('あ', 1);
+        expect($received)->toBe('あ');
     });
 
-    it('should parse a character satisfying the predicate', function (): void {
+    it('should fail when the current character does not satisfy the predicate', function (): void {
         // Act
-        $actual = Pico::predicate(static fn (string $char): bool => $char === 'x')->parse('xyz');
+        $actual = Pico::predicate(static fn (string $char): bool => $char === 'あ')->parse('いうえお');
 
         // Assert
-        expect($actual)->toBeSuccessOf('x', 1);
+        expect($actual)->toBeFailure();
     });
+
+    it('should fail at the end of input without evaluating the predicate', function (): void {
+        // Arrange
+        $wasEvaluated = false;
+        $parser = Pico::predicate(function (string $char) use (&$wasEvaluated): bool {
+            $wasEvaluated = true;
+
+            return $char === 'あ';
+        });
+
+        // Act
+        $actual = $parser->parse('');
+
+        // Assert
+        expect($actual)->toBeFailure();
+        expect($wasEvaluated)->toBeFalse();
+    });
+
+    it('should propagate an exception raised by the predicate', function (): void {
+        Pico::predicate(static function (string $char): bool {
+            throw new \LogicException("Unable to evaluate '{$char}'.");
+        })->parse('あいう');
+    })->throws(\LogicException::class, "Unable to evaluate 'あ'.");
 });
 
 describe('Pico::range()', function (): void {
@@ -624,14 +623,6 @@ describe('Pico::string()', function (): void {
 });
 
 describe('Pico::whitespace()', function (): void {
-    it('should return a PredicateParser instance', function (): void {
-        // Act
-        $actual = Pico::whitespace();
-
-        // Assert
-        expect($actual)->toBeInstanceOf(PredicateParser::class);
-    });
-
     it('should parse an ASCII whitespace character', function (string $input, string $expected): void {
         // Act
         $actual = Pico::whitespace()->parse($input);
