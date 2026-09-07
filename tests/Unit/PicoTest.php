@@ -10,7 +10,6 @@ declare(strict_types=1);
 use Pico\Contracts\Parser;
 use Pico\Exceptions\ParserException;
 use Pico\Parsers\AnyCharParser;
-use Pico\Parsers\BetweenParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\SeqParser;
@@ -155,18 +154,6 @@ describe('Pico::ascii()', function (): void {
 });
 
 describe('Pico::between()', function (): void {
-    it('should return a BetweenParser instance', function (): void {
-        // Act
-        $actual = Pico::between(
-            Pico::char('('),
-            Pico::char(')'),
-            Pico::regexp('[a-z]+'),
-        );
-
-        // Assert
-        expect($actual)->toBeInstanceOf(BetweenParser::class);
-    });
-
     it('should return only the content output', function (): void {
         // Act
         $actual = Pico::between(
@@ -178,6 +165,34 @@ describe('Pico::between()', function (): void {
         // Assert
         expect($actual)->toBeSuccessOf('foo', 5);
     });
+
+    it('should not require the content parser to consume input', function (): void {
+        // Act
+        $actual = Pico::between(
+            Pico::char('('),
+            Pico::char(')'),
+            Pico::char('x')->optional(),
+        )->parse('()');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('', 2);
+    });
+
+    it('should fail when a delimiter or content parser fails', function (string $input): void {
+        // Act
+        $actual = Pico::between(
+            Pico::char('('),
+            Pico::char(')'),
+            Pico::regexp('[a-z]+'),
+        )->parse($input);
+
+        // Assert
+        expect($actual)->toBeFailure();
+    })->with([
+        '[foo]',
+        '(123)',
+        '(foo]',
+    ]);
 });
 
 describe('Pico::char()', function (): void {

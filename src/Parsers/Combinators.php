@@ -55,7 +55,7 @@ final class Combinators
      */
     public static function between(Parser $open, Parser $close, Parser $content): ContextualParser
     {
-        return new BetweenParser($open, $close, $content);
+        return self::skipRight(self::skipLeft($open, $content), $close);
     }
 
     /**
