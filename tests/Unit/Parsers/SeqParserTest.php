@@ -9,17 +9,17 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Parsers;
 
-use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\SeqParser;
+use Pico\Pico;
 
 describe('SeqParser::parseInput', function (): void {
     it('should parse each parser from the current input offset', function (): void {
         // Act
         $actual = new SeqParser(
-            new CharParser('A'),
-            new CharParser('B'),
-            new CharParser('C'),
+            Pico::char('A'),
+            Pico::char('B'),
+            Pico::char('C'),
         )->parseInput(new ParserInput('xABC', offset: 1));
 
         // Assert
@@ -29,9 +29,9 @@ describe('SeqParser::parseInput', function (): void {
     it('should fail when a parser in the sequence fails', function (string $input): void {
         // Act
         $actual = new SeqParser(
-            new CharParser('A'),
-            new CharParser('B'),
-            new CharParser('C'),
+            Pico::char('A'),
+            Pico::char('B'),
+            Pico::char('C'),
         )->parseInput(new ParserInput($input));
 
         // Assert

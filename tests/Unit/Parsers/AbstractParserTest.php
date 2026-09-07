@@ -12,9 +12,9 @@ use Pico\Exceptions\ParserInputException;
 use Pico\Exceptions\ParserException;
 use Pico\Internal\PicoInternal;
 use Pico\Parsers\AbstractParser;
-use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\SeqParser;
+use Pico\Pico;
 
 use function Pico\Parsers\success;
 
@@ -55,7 +55,7 @@ describe('AbstractParser::parse', function (): void {
 describe('AbstractParser::complete', function (): void {
     it('should preserve the output and consumed length after consuming the complete input', function (): void {
         // Act
-        $actual = (new CharParser('A'))->complete()->parse('A');
+        $actual = Pico::char('A')->complete()->parse('A');
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);
@@ -63,7 +63,7 @@ describe('AbstractParser::complete', function (): void {
 
     it('should fail when input remains after parsing', function (): void {
         // Act
-        $actual = (new CharParser('A'))->complete()->parse('AB');
+        $actual = Pico::char('A')->complete()->parse('AB');
 
         // Assert
         expect($actual)->toBeFailure();
@@ -71,7 +71,7 @@ describe('AbstractParser::complete', function (): void {
 
     it('should consume multibyte input completely', function (): void {
         // Act
-        $actual = (new CharParser('あ'))->complete()->parse('あ');
+        $actual = Pico::char('あ')->complete()->parse('あ');
 
         // Assert
         expect($actual)->toBeSuccessOf('あ', 1);
@@ -81,7 +81,7 @@ describe('AbstractParser::complete', function (): void {
 describe('AbstractParser::repeat', function (): void {
     it('should reject a negative minimum repetition count', function (): void {
         // Act
-        $action = fn () => (new CharParser('A'))->repeat(min: -1);
+        $action = fn () => Pico::char('A')->repeat(min: -1);
 
         // Assert
         expect($action)->toThrow(ParserException::class, 'The minimum repetition count must not be negative.');
@@ -89,7 +89,7 @@ describe('AbstractParser::repeat', function (): void {
 
     it('should reject a maximum repetition count below the minimum', function (): void {
         // Act
-        $action = fn () => (new CharParser('A'))->repeat(min: 2, max: 1);
+        $action = fn () => Pico::char('A')->repeat(min: 2, max: 1);
 
         // Assert
         expect($action)->toThrow(
@@ -101,7 +101,7 @@ describe('AbstractParser::repeat', function (): void {
     it('should repeat the parser from the current input offset', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->repeat(),
+            Pico::char('A')->repeat(),
         )->parseInput(new ParserInput('xAAAB', offset: 1));
 
         // Assert
@@ -111,7 +111,7 @@ describe('AbstractParser::repeat', function (): void {
     it('should stop after the maximum repetition count', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->repeat(max: 2),
+            Pico::char('A')->repeat(max: 2),
         )->parseInput(new ParserInput('AAA'));
 
         // Assert
@@ -121,7 +121,7 @@ describe('AbstractParser::repeat', function (): void {
     it('should succeed with no results when the first match fails and the minimum is zero', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->repeat(),
+            Pico::char('A')->repeat(),
         )->parseInput(new ParserInput('BBB'));
 
         // Assert
@@ -131,7 +131,7 @@ describe('AbstractParser::repeat', function (): void {
     it('should fail when fewer than the minimum repetitions match', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->repeat(min: 2),
+            Pico::char('A')->repeat(min: 2),
         )->parseInput(new ParserInput('AB'));
 
         // Assert
@@ -152,7 +152,7 @@ describe('AbstractParser::repeat', function (): void {
 describe('AbstractParser::map', function (): void {
     it('should transform a successful output', function (): void {
         // Act
-        $actual = (new CharParser('a'))
+        $actual = Pico::char('a')
             ->map(static fn (string $char): string => strtoupper($char))
             ->parse('abc');
 
@@ -163,7 +163,7 @@ describe('AbstractParser::map', function (): void {
     it('should not transform a failed output', function (): void {
         // Arrange
         $wasCalled = false;
-        $parser = (new CharParser('A'))->map(function (string $char) use (&$wasCalled): string {
+        $parser = Pico::char('A')->map(function (string $char) use (&$wasCalled): string {
             $wasCalled = true;
 
             return $char;
@@ -181,7 +181,7 @@ describe('AbstractParser::optional', function (): void {
     it('should return the original successful result', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->optional(),
+            Pico::char('A')->optional(),
         )->parseInput(new ParserInput('ABC'));
 
         // Assert
@@ -191,7 +191,7 @@ describe('AbstractParser::optional', function (): void {
     it('should return a successful empty-string result without consuming input when parsing fails', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->optional(),
+            Pico::char('A')->optional(),
         )->parseInput(new ParserInput('BBB'));
 
         // Assert
@@ -202,7 +202,7 @@ describe('AbstractParser::optional', function (): void {
 describe('AbstractParser::skip', function (): void {
     it('should discard the output while preserving the consumed length', function (): void {
         // Act
-        $actual = (new CharParser('A'))->skip()->parse('ABC');
+        $actual = Pico::char('A')->skip()->parse('ABC');
 
         // Assert
         expect($actual)->toBeSuccessOf('', 1);
@@ -210,7 +210,7 @@ describe('AbstractParser::skip', function (): void {
 
     it('should return a failure when parsing fails', function (): void {
         // Act
-        $actual = (new CharParser('A'))->skip()->parse('B');
+        $actual = Pico::char('A')->skip()->parse('B');
 
         // Assert
         expect($actual)->toBeFailure();
@@ -221,7 +221,7 @@ describe('AbstractParser::then', function (): void {
     it('should combine successful outputs and consumed lengths', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->then(new CharParser('B')),
+            Pico::char('A')->then(Pico::char('B')),
         )->parseInput(new ParserInput('ABC'));
 
         // Assert
@@ -243,7 +243,7 @@ describe('AbstractParser::then', function (): void {
 
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->then($right),
+            Pico::char('A')->then($right),
         )->parseInput(new ParserInput('B'));
 
         // Assert
@@ -254,7 +254,7 @@ describe('AbstractParser::then', function (): void {
     it('should fail when the right parser fails', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->then(new CharParser('B')),
+            Pico::char('A')->then(Pico::char('B')),
         )->parseInput(new ParserInput('AC'));
 
         // Assert
@@ -266,7 +266,7 @@ describe('AbstractParser::where', function (): void {
     it('should preserve a successful output when the predicate succeeds', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->where(static fn (string $char): bool => $char === 'A'),
+            Pico::char('A')->where(static fn (string $char): bool => $char === 'A'),
         )->parseInput(new ParserInput('ABC'));
 
         // Assert
@@ -294,7 +294,7 @@ describe('AbstractParser::where', function (): void {
     it('should return a failure when the predicate fails', function (): void {
         // Act
         $actual = PicoInternal::asContextualParser(
-            (new CharParser('A'))->where(static fn (string $char): bool => $char === 'B'),
+            Pico::char('A')->where(static fn (string $char): bool => $char === 'B'),
         )->parseInput(new ParserInput('ABC'));
 
         // Assert
@@ -305,7 +305,7 @@ describe('AbstractParser::where', function (): void {
         // Arrange
         $wasCalled = false;
         $parser = PicoInternal::asContextualParser(
-            (new CharParser('A'))->where(function (string $char) use (&$wasCalled): bool {
+            Pico::char('A')->where(function (string $char) use (&$wasCalled): bool {
                 $wasCalled = true;
 
                 return $char === 'A';

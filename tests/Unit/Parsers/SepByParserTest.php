@@ -10,17 +10,17 @@ declare(strict_types=1);
 namespace Tests\Unit\Parsers;
 
 use Pico\Exceptions\ParserException;
-use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\SepByParser;
+use Pico\Pico;
 
 describe('SepByParser', function (): void {
     it('should reject a negative minimum item count', function (): void {
         // Act
         $action = static fn (): SepByParser => new SepByParser(
             new RegExpParser('\\d+'),
-            new CharParser(','),
+            Pico::char(','),
             min: -1,
         );
 
@@ -34,7 +34,7 @@ describe('SepByParser::parseInput', function (): void {
         // Act
         $actual = new SepByParser(
             new RegExpParser('\\d+'),
-            new CharParser(','),
+            Pico::char(','),
         )->parseInput(new ParserInput('1,22,333x'));
 
         // Assert
@@ -45,7 +45,7 @@ describe('SepByParser::parseInput', function (): void {
         // Act
         $actual = new SepByParser(
             new RegExpParser('\\d+'),
-            new CharParser(','),
+            Pico::char(','),
         )->parseInput(new ParserInput('abc'));
 
         // Assert
@@ -56,7 +56,7 @@ describe('SepByParser::parseInput', function (): void {
         // Act
         $actual = new SepByParser(
             new RegExpParser('\\d+'),
-            new CharParser(','),
+            Pico::char(','),
             min: 2,
         )->parseInput(new ParserInput('1x'));
 
@@ -68,7 +68,7 @@ describe('SepByParser::parseInput', function (): void {
         // Act
         $actual = new SepByParser(
             new RegExpParser('\\d+'),
-            new CharParser(','),
+            Pico::char(','),
         )->parseInput(new ParserInput('1,'));
 
         // Assert

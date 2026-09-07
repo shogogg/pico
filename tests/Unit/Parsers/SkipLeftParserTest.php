@@ -9,16 +9,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Parsers;
 
-use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\SkipLeftParser;
+use Pico\Pico;
 
 describe('SkipLeftParser::parseInput', function (): void {
     it('should return the right output after consuming both parsers', function (): void {
         // Act
         $actual = new SkipLeftParser(
-            new CharParser(':'),
-            new CharParser('A'),
+            Pico::char(':'),
+            Pico::char('A'),
         )->parseInput(new ParserInput(':ABC'));
 
         // Assert
@@ -28,8 +28,8 @@ describe('SkipLeftParser::parseInput', function (): void {
     it('should fail when the left parser fails', function (): void {
         // Act
         $actual = new SkipLeftParser(
-            new CharParser(':'),
-            new CharParser('A'),
+            Pico::char(':'),
+            Pico::char('A'),
         )->parseInput(new ParserInput('A'));
 
         // Assert
@@ -39,8 +39,8 @@ describe('SkipLeftParser::parseInput', function (): void {
     it('should fail when the right parser fails', function (): void {
         // Act
         $actual = new SkipLeftParser(
-            new CharParser(':'),
-            new CharParser('A'),
+            Pico::char(':'),
+            Pico::char('A'),
         )->parseInput(new ParserInput(':B'));
 
         // Assert

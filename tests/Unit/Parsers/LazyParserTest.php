@@ -10,14 +10,14 @@ declare(strict_types=1);
 namespace Tests\Unit\Parsers;
 
 use Pico\Contracts\Parser;
-use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\ParserInput;
+use Pico\Pico;
 
 describe('LazyParser::parseInput', function (): void {
     it('should delegate parsing to the parser returned by the factory', function (): void {
         // Act
-        $actual = new LazyParser(static fn (): Parser => new CharParser('A'))
+        $actual = new LazyParser(static fn (): Parser => Pico::char('A'))
             ->parseInput(new ParserInput('ABC'));
 
         // Assert
@@ -29,7 +29,7 @@ describe('LazyParser::parseInput', function (): void {
         $parser = new LazyParser(function () use (&$wasCalled): Parser {
             $wasCalled = true;
 
-            return new CharParser('A');
+            return Pico::char('A');
         });
 
         // Assert
@@ -47,7 +47,7 @@ describe('LazyParser::parseInput', function (): void {
         $parser = new LazyParser(function () use (&$calls): Parser {
             ++$calls;
 
-            return new CharParser('A');
+            return Pico::char('A');
         });
 
         // Act

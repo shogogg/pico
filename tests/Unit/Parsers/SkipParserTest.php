@@ -9,16 +9,16 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Parsers;
 
-use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\SkipParser;
 use Pico\Parsers\StringParser;
+use Pico\Pico;
 
 describe('SkipParser::parseInput', function (): void {
     it('should discard outputs while preserving the total consumed length', function (): void {
         // Act
         $actual = new SkipParser(
-            new CharParser('A'),
+            Pico::char('A'),
             new StringParser('BC'),
         )->parseInput(new ParserInput('ABCD'));
 
@@ -29,8 +29,8 @@ describe('SkipParser::parseInput', function (): void {
     it('should fail when a parser in the sequence fails', function (): void {
         // Act
         $actual = new SkipParser(
-            new CharParser('A'),
-            new CharParser('B'),
+            Pico::char('A'),
+            Pico::char('B'),
         )->parseInput(new ParserInput('AX'));
 
         // Assert

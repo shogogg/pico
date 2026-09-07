@@ -7,17 +7,17 @@
  */
 declare(strict_types=1);
 
-use Pico\Parsers\CharParser;
 use Pico\Parsers\ExceptParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\StringParser;
+use Pico\Pico;
 
 describe('ExceptParser::parseInput', function (): void {
     it('should fail without consuming input when the exclusion parser succeeds', function (): void {
         // Act
         $actual = new ExceptParser(
             new StringParser('apple'),
-            new CharParser('a'),
+            Pico::char('a'),
         )->parseInput(new ParserInput('apple'));
 
         // Assert
@@ -29,8 +29,8 @@ describe('ExceptParser::parseInput', function (): void {
     it('should return the parser result when the exclusion parser fails', function (): void {
         // Act
         $actual = new ExceptParser(
-            new CharParser('a'),
-            new CharParser('b'),
+            Pico::char('a'),
+            Pico::char('b'),
         )->parseInput(new ParserInput('apple'));
 
         // Assert
@@ -40,8 +40,8 @@ describe('ExceptParser::parseInput', function (): void {
     it('should return the parser failure when the exclusion parser fails', function (): void {
         // Act
         $actual = new ExceptParser(
-            new CharParser('b'),
-            new CharParser('c'),
+            Pico::char('b'),
+            Pico::char('c'),
         )->parseInput(new ParserInput('apple'));
 
         // Assert

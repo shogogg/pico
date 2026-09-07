@@ -8,9 +8,9 @@
 declare(strict_types=1);
 
 use Pico\Contracts\Parser;
+use Pico\Exceptions\ParserException;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\BetweenParser;
-use Pico\Parsers\CharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\PredicateParser;
 use Pico\Parsers\RangeParser;
@@ -208,14 +208,6 @@ describe('Pico::between()', function (): void {
 });
 
 describe('Pico::char()', function (): void {
-    it('should return a CharParser instance', function (): void {
-        // Act
-        $actual = Pico::char('A');
-
-        // Assert
-        expect($actual)->toBeInstanceOf(CharParser::class);
-    });
-
     it('should parse the given character', function (): void {
         // Act
         $actual = Pico::char('A')->parse('ABC');
@@ -223,6 +215,37 @@ describe('Pico::char()', function (): void {
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);
     });
+
+    it('should parse a multibyte character', function (): void {
+        // Act
+        $actual = Pico::char('😀')->parse('😀ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('😀', 1);
+    });
+
+    it('should fail when the current character does not match', function (): void {
+        // Act
+        $actual = Pico::char('A')->parse('BCD');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should reject an invalid UTF-8 character', function (string $char): void {
+        Pico::char($char);
+    })->with([
+        'invalid byte' => "\x80",
+        'incomplete multibyte character' => "\xE3\x81",
+    ])->throws(ParserException::class, 'The character must be valid UTF-8.');
+
+    it('should reject a character that is not exactly one character long', function (string $char): void {
+        Pico::char($char);
+    })->with([
+        '',
+        'ab',
+        'あい',
+    ])->throws(ParserException::class, 'The character must be exactly one character long.');
 });
 
 describe('Pico::digit()', function (): void {
@@ -308,7 +331,7 @@ describe('Pico::join()', function (): void {
 describe('Pico::lazy()', function (): void {
     it('should return a LazyParser instance', function (): void {
         // Act
-        $actual = Pico::lazy(static fn (): CharParser => new CharParser('A'));
+        $actual = Pico::lazy(static fn (): Parser => Pico::char('A'));
 
         // Assert
         expect($actual)->toBeInstanceOf(LazyParser::class);
@@ -316,7 +339,7 @@ describe('Pico::lazy()', function (): void {
 
     it('should parse the parser returned by the factory', function (): void {
         // Act
-        $actual = Pico::lazy(static fn (): CharParser => new CharParser('A'))->parse('ABC');
+        $actual = Pico::lazy(static fn (): Parser => Pico::char('A'))->parse('ABC');
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);

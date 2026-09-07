@@ -18,7 +18,6 @@ use Pico\Parsers\AbstractParser;
 use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\AnyOfParser;
 use Pico\Parsers\BetweenParser;
-use Pico\Parsers\CharParser;
 use Pico\Parsers\EofParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\OneOfParser;
@@ -34,6 +33,7 @@ use Pico\Parsers\SkipRightParser;
 use Pico\Parsers\StringParser;
 
 use function Pico\Parsers\failure;
+use function Pico\Parsers\success;
 
 /**
  * Parser factory facade.
@@ -175,7 +175,18 @@ final class Pico
      */
     public static function char(string $char): Parser
     {
-        return new CharParser($char);
+        if (!mb_check_encoding($char, 'UTF-8')) {
+            throw new ParserException('The character must be valid UTF-8.');
+        }
+        if (mb_strlen($char) !== 1) {
+            throw new ParserException('The character must be exactly one character long.');
+        }
+        return AbstractParser::createParser(function (ParserInput $input) use ($char): ParserResult {
+            if ($input->isAtEnd()) {
+                return failure();
+            }
+            return $input->current() === $char ? success($char, 1) : failure();
+        });
     }
 
     /**

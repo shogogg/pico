@@ -10,16 +10,16 @@ declare(strict_types=1);
 namespace Tests\Unit\Parsers;
 
 use Pico\Parsers\BetweenParser;
-use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
 use Pico\Parsers\RegExpParser;
+use Pico\Pico;
 
 describe('BetweenParser::parseInput', function (): void {
     it('should return the content output after parsing the delimiters', function (): void {
         // Act
         $actual = new BetweenParser(
-            new CharParser('('),
-            new CharParser(')'),
+            Pico::char('('),
+            Pico::char(')'),
             new RegExpParser('[a-z]+'),
         )->parseInput(new ParserInput('x(foo)', offset: 1));
 
@@ -30,9 +30,9 @@ describe('BetweenParser::parseInput', function (): void {
     it('should succeed when the content parser succeeds without consuming input', function (): void {
         // Act
         $actual = new BetweenParser(
-            new CharParser('('),
-            new CharParser(')'),
-            (new CharParser('x'))->optional(),
+            Pico::char('('),
+            Pico::char(')'),
+            Pico::char('x')->optional(),
         )->parseInput(new ParserInput('()'));
 
         // Assert
@@ -42,8 +42,8 @@ describe('BetweenParser::parseInput', function (): void {
     it('should fail when the opening parser fails', function (): void {
         // Act
         $actual = new BetweenParser(
-            new CharParser('('),
-            new CharParser(')'),
+            Pico::char('('),
+            Pico::char(')'),
             new RegExpParser('[a-z]+'),
         )->parseInput(new ParserInput('[foo]'));
 
@@ -54,8 +54,8 @@ describe('BetweenParser::parseInput', function (): void {
     it('should fail when the content parser fails', function (): void {
         // Act
         $actual = new BetweenParser(
-            new CharParser('('),
-            new CharParser(')'),
+            Pico::char('('),
+            Pico::char(')'),
             new RegExpParser('[a-z]+'),
         )->parseInput(new ParserInput('(123)'));
 
@@ -66,8 +66,8 @@ describe('BetweenParser::parseInput', function (): void {
     it('should fail when the closing parser fails', function (): void {
         // Act
         $actual = new BetweenParser(
-            new CharParser('('),
-            new CharParser(')'),
+            Pico::char('('),
+            Pico::char(')'),
             new RegExpParser('[a-z]+'),
         )->parseInput(new ParserInput('(foo]'));
 

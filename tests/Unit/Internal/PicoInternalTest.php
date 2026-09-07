@@ -12,8 +12,8 @@ use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
 use Pico\Failure;
 use Pico\Internal\PicoInternal;
-use Pico\Parsers\CharParser;
 use Pico\Parsers\ParserInput;
+use Pico\Pico;
 
 describe('PicoInternal::ensureContextualParser()', function (): void {
     it('should throw an exception containing the class name for a non-contextual parser', function (): void {
@@ -104,7 +104,7 @@ describe('PicoInternal::ensureContextualParser()', function (): void {
         };
 
         // Act
-        $actual = $parseInput(new CharParser('a'));
+        $actual = $parseInput(Pico::char('a'));
 
         // Assert
         expect($actual)->toBeSuccessOf('a', 1);
@@ -186,7 +186,7 @@ describe('PicoInternal::asContextualParser()', function (): void {
 
     it('should return the same contextual parser instance', function (): void {
         // Arrange
-        $parser = new CharParser('a');
+        $parser = Pico::char('a');
 
         // Act
         $actual = PicoInternal::asContextualParser($parser);
