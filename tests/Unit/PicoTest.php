@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 use Pico\Contracts\Parser;
 use Pico\Exceptions\ParserException;
-use Pico\Parsers\AnyCharParser;
 use Pico\Parsers\LazyParser;
 use Pico\Parsers\RegExpParser;
 use Pico\Parsers\StringParser;
@@ -67,20 +66,24 @@ describe('Pico::alphaNum()', function (): void {
 });
 
 describe('Pico::anyChar()', function (): void {
-    it('should return an AnyCharParser instance', function (): void {
+    it('should parse the first UTF-8 character', function (string $input, string $expected): void {
         // Act
-        $actual = Pico::anyChar();
+        $actual = Pico::anyChar()->parse($input);
 
         // Assert
-        expect($actual)->toBeInstanceOf(AnyCharParser::class);
-    });
+        expect($actual)->toBeSuccessOf($expected, 1);
+    })->with([
+        ['ABC', 'A'],
+        ['あいう', 'あ'],
+        ['😀ab', '😀'],
+    ]);
 
-    it('should parse any character', function (): void {
+    it('should fail at EOF', function (): void {
         // Act
-        $actual = Pico::anyChar()->parse('ABC');
+        $actual = Pico::anyChar()->parse('');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeFailure();
     });
 });
 

@@ -66,7 +66,11 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function anyChar(): ContextualParser
     {
-        return self::memoize('anyChar', static fn (): ContextualParser => new AnyCharParser());
+        return self::memoize('anyChar', static fn (): ContextualParser => self::create(
+            static function (ParserInput $input): ParserResult {
+                return $input->isAtEnd() ? failure() : success($input->current(), 1);
+            },
+        ));
     }
 
     /** @return ContextualParser<string> */
