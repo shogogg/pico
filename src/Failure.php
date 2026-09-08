@@ -57,6 +57,12 @@ final readonly class Failure implements ParserResult
     }
 
     /** {@inheritDoc} */
+    public function concat(): ParserResult
+    {
+        return $this;
+    }
+
+    /** {@inheritDoc} */
     public function output(): never
     {
         throw new LogicException('There is no value');

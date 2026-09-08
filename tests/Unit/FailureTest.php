@@ -37,6 +37,19 @@ describe('->consumedLength()', function (): void {
     });
 });
 
+describe('->concat()', function (): void {
+    it('should return itself', function (): void {
+        // Arrange
+        $failure = Failure::getInstance();
+
+        // Act
+        $actual = $failure->concat();
+
+        // Assert
+        expect($actual)->toBe($failure);
+    });
+});
+
 describe('->output()', function (): void {
     it('should throw an exception because there is no output', function (): void {
         // Arrange

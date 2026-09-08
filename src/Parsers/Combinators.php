@@ -65,6 +65,16 @@ final class Combinators
      * @param Parser<T> ...$parsers
      * @return ContextualParser<string>
      */
+    public static function concat(Parser ...$parsers): ContextualParser
+    {
+        return PicoInternal::asContextualParser(self::seq(...$parsers)->concat());
+    }
+
+    /**
+     * @template T
+     * @param Parser<T> ...$parsers
+     * @return ContextualParser<string>
+     */
     public static function join(Parser ...$parsers): ContextualParser
     {
         return PicoInternal::asContextualParser(self::seq(...$parsers)->join());

@@ -34,6 +34,13 @@ interface ParserResult
     public function consumedLength(): int;
 
     /**
+     * Recursively concatenates the output into a string.
+     *
+     * @return ParserResult<string>
+     */
+    public function concat(): ParserResult;
+
+    /**
      * The output of the parser.
      *
      * @return T

@@ -185,6 +185,14 @@ Pico::between(Pico::char('['), Pico::regexp('\\d+'), Pico::char(']'))
     ->parse('[42]'); // Success('42', 4)
 ```
 
+### `Pico::concat()`
+Returns a parser that consumes its parsers in sequence and recursively concatenates nested outputs.
+
+```php
+Pico::concat(Pico::char('A'), Pico::pair(Pico::char('B'), Pico::char('C')))
+    ->parse('ABC'); // Success('ABC', 3)
+```
+
 ### `Pico::join()`
 Returns a parser that consumes its parsers in sequence and joins their outputs.
 
@@ -236,6 +244,13 @@ Requires a successful parser to consume the entire input.
 
 ```php
 Pico::digit()->complete()->parse('7x'); // Failure
+```
+
+### `Parser::concat()`
+Recursively concatenates a successful nested array output into a string. Unsupported values raise `ParserException`.
+
+```php
+Pico::char('A')->then(Pico::char('B')->then(Pico::char('C')))->concat()->parse('ABC'); // Success('ABC', 3)
 ```
 
 ### `Parser::except()`
@@ -317,6 +332,13 @@ Returns the number of UTF-8 characters consumed. A failure consumes zero charact
 
 ```php
 Pico::string('あい')->parse('あいう')->consumedLength(); // 2
+```
+
+### `ParserResult::concat()`
+Recursively concatenates a successful nested array output into a string while preserving consumption. Unsupported values raise `ParserException`.
+
+```php
+Pico::seq(Pico::char('a'), Pico::seq(Pico::char('b'), Pico::char('c')))->parse('abc')->concat()->output(); // 'abc'
 ```
 
 ### `ParserResult::output()`

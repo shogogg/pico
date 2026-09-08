@@ -85,9 +85,9 @@ final class Rfc5322EmailParser
         );
 
         // dot-atom-text = 1*atext *("." 1*atext)
-        $dotAtomText = Pico::join(
-            $atext->repeat(min: 1)->join(),
-            Pico::join(Pico::char('.'), $atext->repeat(min: 1)->join())->repeat()->join(),
+        $dotAtomText = Pico::concat(
+            $atext->repeat(min: 1),
+            Pico::seq(Pico::char('.'), $atext->repeat(min: 1))->repeat(),
         );
 
         // dot-atom = [CFWS] dot-atom-text [CFWS]
@@ -112,8 +112,8 @@ final class Rfc5322EmailParser
             $cfws->optional(),
             Pico::between(
                 Pico::char('"'),
-                Pico::join(
-                    Pico::join($fws->optional(), $qcontent)->repeat()->join(),
+                Pico::concat(
+                    Pico::seq($fws->optional(), $qcontent)->repeat(),
                     $fws->optional(),
                 ),
                 Pico::char('"'),
@@ -133,9 +133,9 @@ final class Rfc5322EmailParser
         // domain-literal = [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
         $domainLiteral = Pico::between(
             $cfws->optional(),
-            Pico::join(
+            Pico::concat(
                 Pico::char('['),
-                Pico::join($fws->optional(), $dtext)->repeat()->join(),
+                Pico::seq($fws->optional(), $dtext)->repeat(),
                 $fws->optional(),
                 Pico::char(']'),
             ),

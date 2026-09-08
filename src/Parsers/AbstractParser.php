@@ -44,6 +44,14 @@ abstract class AbstractParser implements Parser, ContextualParser
         });
     }
 
+    /** {@inheritDoc} */
+    final public function concat(): Parser
+    {
+        return self::create(
+            fn (ParserInput $input): ParserResult => $this->parseInput($input)->concat(),
+        );
+    }
+
     /**
      * @template TExcept
      * @param Parser<TExcept> $except

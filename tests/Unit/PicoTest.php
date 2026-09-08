@@ -285,6 +285,53 @@ describe('Pico::charWhere()', function (): void {
     })->throws(\LogicException::class, "Unable to evaluate 'あ'.");
 });
 
+describe('Pico::concat()', function (): void {
+    it('should concatenate sequential parser outputs from left to right', function (): void {
+        // Act
+        $actual = Pico::concat(Pico::char('A'), Pico::string('BC'), Pico::char('D'))->parse('ABCD!');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('ABCD', 4);
+    });
+
+    it('should recursively concatenate nested parser outputs', function (): void {
+        // Act
+        $actual = Pico::concat(
+            Pico::char('A'),
+            Pico::pair(Pico::char('B'), Pico::char('C')),
+            Pico::seq(Pico::char('D'), Pico::pair(Pico::char('E'), Pico::char('F'))),
+        )->parse('ABCDEF!');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('ABCDEF', 6);
+    });
+
+    it('should stop evaluating parsers after a failure', function (): void {
+        // Arrange
+        $wasResolved = false;
+        $second = Pico::lazy(function () use (&$wasResolved): Parser {
+            $wasResolved = true;
+
+            return Pico::char('B');
+        });
+
+        // Act
+        $actual = Pico::concat(Pico::char('A'), $second)->parse('X');
+
+        // Assert
+        expect($actual)->toBeFailure();
+        expect($wasResolved)->toBeFalse();
+    });
+
+    it('should succeed with an empty string when no parsers are given', function (): void {
+        // Act
+        $actual = Pico::concat()->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('', 0);
+    });
+});
+
 describe('Pico::digit()', function (): void {
     it('should parse an ASCII decimal digit', function (string $input, string $expected): void {
         // Act

@@ -77,6 +77,27 @@ describe('AbstractParser::complete', function (): void {
     });
 });
 
+describe('AbstractParser::concat', function (): void {
+    it('should recursively concatenate a nested array output while preserving the consumed length', function (): void {
+        // Act
+        $actual = Pico::char('A')
+            ->then(Pico::char('B')->then(Pico::char('C')))
+            ->concat()
+            ->parse('ABCD');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('ABC', 3);
+    });
+
+    it('should return a failure when parsing fails', function (): void {
+        // Act
+        $actual = Pico::char('A')->then(Pico::char('B'))->concat()->parse('AC');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+});
+
 describe('AbstractParser::except', function (): void {
     it('should fail without consuming input when the exclusion parser succeeds', function (): void {
         // Act

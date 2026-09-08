@@ -37,6 +37,13 @@ interface Parser
     public function complete(): Parser;
 
     /**
+     * Recursively concatenates the output into a string.
+     *
+     * @return Parser<string>
+     */
+    public function concat(): Parser;
+
+    /**
      * Repeats this parser.
      *
      * @return Parser<list<T>>

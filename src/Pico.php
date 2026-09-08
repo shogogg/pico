@@ -118,6 +118,18 @@ final class Pico
     }
 
     /**
+     * Creates a parser that recursively concatenates sequential parser outputs.
+     *
+     * @template T
+     * @param Parser<T> ...$parsers
+     * @return Parser<string>
+     */
+    public static function concat(Parser ...$parsers): Parser
+    {
+        return Combinators::concat(...$parsers);
+    }
+
+    /**
      * Creates a parser that matches any ASCII decimal digit.
      *
      * @return Parser<string>

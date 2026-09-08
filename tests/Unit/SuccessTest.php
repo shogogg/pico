@@ -41,6 +41,29 @@ describe('->consumedLength()', function (): void {
     ]);
 });
 
+describe('->concat()', function (): void {
+    it('should recursively concatenate nested array output and preserve the consumed length', function (): void {
+        // Act
+        $actual = Success::of(['one', ['-', 2], new class () implements \Stringable {
+            public function __toString(): string
+            {
+                return '!';
+            }
+        }], 5)->concat();
+
+        // Assert
+        expect($actual)->toBeSuccessOf('one-2!', 5);
+    });
+
+    it('should throw when a nested array contains a non-stringable value', function (): void {
+        // Act
+        $action = static fn () => Success::of(['one', ['two', new \stdClass()]], 5)->concat();
+
+        // Assert
+        expect($action)->toThrow(ParserException::class, 'The value must be a scalar or implement Stringable.');
+    });
+});
+
 describe('->output()', function (): void {
     it('should returns the output', function (string $output, int $consumedLength): void {
         $success = Success::of($output, $consumedLength);

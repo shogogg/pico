@@ -65,6 +65,12 @@ final readonly class Success implements ParserResult
     }
 
     /** {@inheritDoc} */
+    public function concat(): ParserResult
+    {
+        return self::of(self::concatenate($this->output), $this->consumedLength);
+    }
+
+    /** {@inheritDoc} */
     public function output()
     {
         return $this->output;
@@ -88,6 +94,16 @@ final readonly class Success implements ParserResult
             : self::stringify($this->output);
 
         return self::of($output, $this->consumedLength);
+    }
+
+    /**
+     * @throws ParserException When the value cannot be converted to a string.
+     */
+    private static function concatenate(mixed $value): string
+    {
+        return is_array($value)
+            ? implode('', array_map(self::concatenate(...), $value))
+            : self::stringify($value);
     }
 
     /**
