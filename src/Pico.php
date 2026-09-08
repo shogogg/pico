@@ -87,13 +87,13 @@ final class Pico
      * @template TContent
      * @template TClose
      * @param Parser<TOpen> $open
-     * @param Parser<TClose> $close
      * @param Parser<TContent> $content
+     * @param Parser<TClose> $close
      * @return Parser<TContent>
      */
-    public static function between(Parser $open, Parser $close, Parser $content): Parser
+    public static function between(Parser $open, Parser $content, Parser $close): Parser
     {
-        return Combinators::between($open, $close, $content);
+        return Combinators::between($open, $content, $close);
     }
 
     /**

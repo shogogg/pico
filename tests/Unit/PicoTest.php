@@ -157,8 +157,8 @@ describe('Pico::between()', function (): void {
         // Act
         $actual = Pico::between(
             Pico::char('('),
-            Pico::char(')'),
             Pico::regexp('[a-z]+'),
+            Pico::char(')'),
         )->parse('(foo)');
 
         // Assert
@@ -169,8 +169,8 @@ describe('Pico::between()', function (): void {
         // Act
         $actual = Pico::between(
             Pico::char('('),
-            Pico::char(')'),
             Pico::char('x')->optional(),
+            Pico::char(')'),
         )->parse('()');
 
         // Assert
@@ -181,8 +181,8 @@ describe('Pico::between()', function (): void {
         // Act
         $actual = Pico::between(
             Pico::char('('),
-            Pico::char(')'),
             Pico::regexp('[a-z]+'),
+            Pico::char(')'),
         )->parse($input);
 
         // Assert

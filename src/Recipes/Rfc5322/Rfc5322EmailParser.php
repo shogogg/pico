@@ -93,8 +93,8 @@ final class Rfc5322EmailParser
         // dot-atom = [CFWS] dot-atom-text [CFWS]
         $dotAtom = Pico::between(
             $cfws->optional(),
-            $cfws->optional(),
             $dotAtomText,
+            $cfws->optional(),
         );
 
         // qtext = %d33 / %d35-91 / %d93-126
@@ -110,15 +110,15 @@ final class Rfc5322EmailParser
         // quoted-string = [CFWS] DQUOTE *([FWS] qcontent) [FWS] DQUOTE [CFWS]
         $quotedString = Pico::between(
             $cfws->optional(),
-            $cfws->optional(),
             Pico::between(
-                Pico::char('"'),
                 Pico::char('"'),
                 Pico::join(
                     Pico::join($fws->optional(), $qcontent)->repeat()->join(),
                     $fws->optional(),
                 ),
+                Pico::char('"'),
             ),
+            $cfws->optional(),
         );
 
         // local-part = dot-atom / quoted-string
@@ -133,13 +133,13 @@ final class Rfc5322EmailParser
         // domain-literal = [CFWS] "[" *([FWS] dtext) [FWS] "]" [CFWS]
         $domainLiteral = Pico::between(
             $cfws->optional(),
-            $cfws->optional(),
             Pico::join(
                 Pico::char('['),
                 Pico::join($fws->optional(), $dtext)->repeat()->join(),
                 $fws->optional(),
                 Pico::char(']'),
             ),
+            $cfws->optional(),
         );
 
         // domain = dot-atom / domain-literal

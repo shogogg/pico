@@ -29,8 +29,8 @@ final class JsonParser
         $whitespace = JsonSyntax::whitespace();
         $json = Pico::between(
             $whitespace,
-            $whitespace,
             JsonSyntax::value(),
+            $whitespace,
         );
         return $json->complete();
     }

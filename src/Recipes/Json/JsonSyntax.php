@@ -170,8 +170,8 @@ final class JsonSyntax
     {
         return self::memoize('string', static fn (): Parser => Pico::between(
             Pico::char('"'),
-            Pico::char('"'),
             self::stringContent(),
+            Pico::char('"'),
         ));
     }
 
@@ -237,8 +237,8 @@ final class JsonSyntax
 
         return Pico::between(
             Pico::seq($whitespace, Pico::char('['), $whitespace),
-            Pico::seq($whitespace, Pico::char(']'), $whitespace),
             Pico::sepBy($value, $arraySep),
+            Pico::seq($whitespace, Pico::char(']'), $whitespace),
         );
     }
 
@@ -266,10 +266,10 @@ final class JsonSyntax
 
         return Pico::between(
             Pico::skip($whitespace, Pico::char('{'), $whitespace),
-            Pico::skip($whitespace, Pico::char('}'), $whitespace),
             Pico::sepBy($objectMember, $objectValueSep)->map(
                 static fn (array $members): array => array_merge([], ...$members),
             ),
+            Pico::skip($whitespace, Pico::char('}'), $whitespace),
         );
     }
 }

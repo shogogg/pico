@@ -49,11 +49,11 @@ final class Combinators
      * @template TContent
      * @template TClose
      * @param Parser<TOpen> $open
-     * @param Parser<TClose> $close
      * @param Parser<TContent> $content
+     * @param Parser<TClose> $close
      * @return ContextualParser<TContent>
      */
-    public static function between(Parser $open, Parser $close, Parser $content): ContextualParser
+    public static function between(Parser $open, Parser $content, Parser $close): ContextualParser
     {
         /** @var ContextualParser<TContent> $parser */
         $parser = self::seq($open, $content, $close)->map(static fn (array $outputs): mixed => $outputs[1]);
