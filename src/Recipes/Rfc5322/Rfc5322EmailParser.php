@@ -24,14 +24,11 @@ final class Rfc5322EmailParser
      */
     public static function address(): Parser
     {
-        // HTAB = %x09 ; horizontal tab
-        $htab = Pico::char("\t");
+        // WSP = SP(%x20) / HTAB(%x09) ; white space
+        $wsp = Pico::oneOf(" \t");
 
-        // SP = %x20
-        $sp = Pico::char(' ');
-
-        // WSP = SP / HTAB ; white space
-        $wsp = Pico::anyOf($sp, $htab);
+        // DQUOTE = %x22 ; double quote
+        $dquote = Pico::char('"');
 
         // VCHAR = %x21-7E ; visible (printing) characters
         $vchar = Pico::range(chr(0x21), chr(0x7E));
@@ -108,17 +105,13 @@ final class Rfc5322EmailParser
         $qcontent = Pico::anyOf($qtext, $quotedPair);
 
         // quoted-string = [CFWS] DQUOTE *([FWS] qcontent) [FWS] DQUOTE [CFWS]
-        $quotedString = Pico::between(
-            $cfws->optional(),
-            Pico::between(
-                Pico::char('"'),
-                Pico::concat(
-                    Pico::seq($fws->optional(), $qcontent)->repeat(),
-                    $fws->optional(),
-                ),
-                Pico::char('"'),
-            ),
-            $cfws->optional(),
+        $quotedString = Pico::concat(
+            Pico::skip($cfws->optional()),
+            Pico::skip($dquote),
+            Pico::seq($fws->optional(), $qcontent)->repeat(),
+            $fws->optional(),
+            Pico::skip($dquote),
+            Pico::skip($cfws->optional()),
         );
 
         // local-part = dot-atom / quoted-string
@@ -146,10 +139,15 @@ final class Rfc5322EmailParser
         $domain = Pico::anyOf($dotAtom, $domainLiteral);
 
         // addr-spec = local-part "@" domain
-        return Pico::seq($localPart, Pico::char('@'), $domain)
+        $addrSpec = Pico::pair(
+            $localPart,
+            $domain,
+            sep: Pico::char('@'),
+        );
+        return $addrSpec
             ->map(static fn (array $parts): array => [
                 'local_part' => $parts[0],
-                'domain' => $parts[2],
+                'domain' => $parts[1],
             ])
             ->complete();
     }
