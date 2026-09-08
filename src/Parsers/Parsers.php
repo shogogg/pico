@@ -214,6 +214,16 @@ final class Parsers
         return new RegExpParser($pattern);
     }
 
+    /**
+     * @template T
+     * @param Closure(Parser<T>): Parser<T> $definition
+     * @return ContextualParser<T>
+     */
+    public static function recursive(Closure $definition): ContextualParser
+    {
+        return new RecursiveParser($definition);
+    }
+
     /** @return ContextualParser<string> */
     public static function string(string $expected): ContextualParser
     {

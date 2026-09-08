@@ -228,6 +228,20 @@ Returns a parser that defers constructing its inner parser until parsing begins,
 Pico::lazy(static fn (): Parser => Pico::char('A'))->parse('ABC'); // Success('A', 1)
 ```
 
+### `Pico::recursive()`
+Returns a lazily defined parser that can refer to itself. The definition is evaluated once, when parsing begins.
+
+```php
+$nested = Pico::recursive(static function (Parser $self): Parser {
+    return Pico::anyOf(
+        Pico::char('x'),
+        Pico::between(Pico::char('('), $self, Pico::char(')')),
+    );
+});
+
+$nested->parse('((x))'); // Success('x', 5)
+```
+
 ## `Parser` operations
 
 Every factory returns a `Pico\Contracts\Parser`.

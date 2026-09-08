@@ -49,13 +49,10 @@ final class Rfc5322EmailParser
             Pico::range(chr(93), chr(126)),
         );
 
-        $comment = null;
         // comment = "(" *([FWS] ccontent) [FWS] ")"
-        $comment = Pico::lazy(function () use (&$comment, $ctext, $fws, $quotedPair): Parser {
-            assert($comment !== null);
-
+        $comment = Pico::recursive(static function (Parser $self) use ($ctext, $fws, $quotedPair): Parser {
             // ccontent = ctext / quoted-pair / comment
-            $ccontent = Pico::anyOf($ctext, $quotedPair, $comment);
+            $ccontent = Pico::anyOf($ctext, $quotedPair, $self);
 
             return Pico::skip(
                 Pico::char('('),

@@ -643,6 +643,25 @@ describe('Pico::range()', function (): void {
     });
 });
 
+describe('Pico::recursive()', function (): void {
+    it('should parse a recursively defined parser', function (): void {
+        // Arrange
+        $parser = Pico::recursive(static function (Parser $self): Parser {
+            return Pico::anyOf(
+                Pico::char('x'),
+                Pico::between(Pico::char('('), $self, Pico::char(')')),
+            );
+        });
+
+        // Act
+        $actual = $parser->parse('((x))');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('x', 5);
+    });
+
+});
+
 describe('Pico::regexp()', function (): void {
     it('should return a RegExpParser instance', function (): void {
         // Act

@@ -212,7 +212,19 @@ final class Pico
     }
 
     /**
-     * Creates a parser that matches a regular expression at the current input offset.
+     * Creates a parser whose definition can refer to itself.
+     *
+     * @template T
+     * @param Closure(Parser<T>): Parser<T> $definition
+     * @return Parser<T>
+     */
+    public static function recursive(Closure $definition): Parser
+    {
+        return Parsers::recursive($definition);
+    }
+
+    /**
+    * Creates a parser that matches a regular expression at the current input offset.
      *
      * @return Parser<string>
      */
