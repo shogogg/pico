@@ -7,69 +7,73 @@
  */
 declare(strict_types=1);
 
-namespace Tests\Unit\Recipes\Rfc5322;
+namespace Tests\Unit\Recipes\Email;
 
-use Pico\Recipes\Rfc5322\Rfc5322EmailParser;
+use Pico\Recipes\Email\Email;
+use Pico\Recipes\Email\Rfc5322EmailParser;
 
 describe('Rfc5322EmailParser::address', function (): void {
-    it('should parse an addr-spec and consume the complete input', function (string $input, array $expected): void {
+    it('should parse an addr-spec and consume the complete input', function (string $input, Email $expected): void {
         // Act
         $actual = Rfc5322EmailParser::address()->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, mb_strlen($input));
+        expect($actual)->toBeSuccess();
+        expect($actual->consumedLength())->toBe(mb_strlen($input));
+        expect($actual->output()->localPart)->toBe($expected->localPart);
+        expect($actual->output()->domain)->toBe($expected->domain);
     })->with([
         'simple atom' => [
             'simple@example.com',
-            ['local_part' => 'simple', 'domain' => 'example.com'],
+            new Email('simple', 'example.com'),
         ],
         'dot-atoms' => [
             'first.last@sub.example.com',
-            ['local_part' => 'first.last', 'domain' => 'sub.example.com'],
+            new Email('first.last', 'sub.example.com'),
         ],
         'digits' => [
             'a1.b2@123.456',
-            ['local_part' => 'a1.b2', 'domain' => '123.456'],
+            new Email('a1.b2', '123.456'),
         ],
         'atext special characters' => [
             '!#$%&\'*+-/=?^_`{|}~@example.com',
-            ['local_part' => '!#$%&\'*+-/=?^_`{|}~', 'domain' => 'example.com'],
+            new Email('!#$%&\'*+-/=?^_`{|}~', 'example.com'),
         ],
         'quoted local part with FWS' => [
             '"quoted local"@example.com',
-            ['local_part' => 'quoted local', 'domain' => 'example.com'],
+            new Email('quoted local', 'example.com'),
         ],
         'quoted local part with folded FWS' => [
             "\"quoted\r\n local\"@example.com",
-            ['local_part' => 'quoted local', 'domain' => 'example.com'],
+            new Email('quoted local', 'example.com'),
         ],
         'dot-atom with nested comments' => [
             'first(outer(inner))@example.com',
-            ['local_part' => 'first', 'domain' => 'example.com'],
+            new Email('first', 'example.com'),
         ],
         'dot-atom with escaped comment parenthesis' => [
             'first(\\))@example.com',
-            ['local_part' => 'first', 'domain' => 'example.com'],
+            new Email('first', 'example.com'),
         ],
         'quoted local part with CFWS' => [
             '(comment)"quoted"(comment)@example.com',
-            ['local_part' => 'quoted', 'domain' => 'example.com'],
+            new Email('quoted', 'example.com'),
         ],
         'escaped character in quoted local part' => [
             '"foo\\"bar"@example.com',
-            ['local_part' => 'foo"bar', 'domain' => 'example.com'],
+            new Email('foo"bar', 'example.com'),
         ],
         'empty quoted local part' => [
             '""@example.com',
-            ['local_part' => '', 'domain' => 'example.com'],
+            new Email('', 'example.com'),
         ],
         'domain literal' => [
             'user@[127.0.0.1]',
-            ['local_part' => 'user', 'domain' => '[127.0.0.1]'],
+            new Email('user', '[127.0.0.1]'),
         ],
         'IPv6 domain literal' => [
             'user@[IPv6:2001:db8::1]',
-            ['local_part' => 'user', 'domain' => '[IPv6:2001:db8::1]'],
+            new Email('user', '[IPv6:2001:db8::1]'),
         ],
     ]);
 

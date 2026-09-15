@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-namespace Pico\Recipes\Rfc5322;
+namespace Pico\Recipes\Email;
 
 use Pico\Contracts\Parser;
 use Pico\Pico;
@@ -20,7 +20,7 @@ final class Rfc5322EmailParser
     /**
      * Creates a parser for an RFC 5322 addr-spec.
      *
-     * @return Parser<array{local_part: string, domain: string}>
+     * @return Parser<Email>
      */
     public static function address(): Parser
     {
@@ -142,10 +142,10 @@ final class Rfc5322EmailParser
             sep: Pico::char('@'),
         );
         return $addrSpec
-            ->map(static fn (array $parts): array => [
-                'local_part' => $parts[0],
-                'domain' => $parts[1],
-            ])
+            ->map(static fn (array $outputs): Email => new Email(
+                localPart: $outputs[0],
+                domain: $outputs[1],
+            ))
             ->complete();
     }
 }
