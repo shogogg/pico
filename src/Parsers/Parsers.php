@@ -53,11 +53,7 @@ final class Parsers
     {
         return self::memoize(
             'anyChar',
-            static fn (): ContextualParser => self::create(
-                static fn (ParserInput $input): ParserResult => $input->isAtEnd()
-                    ? failure()
-                    : success($input->current(), 1)
-            ),
+            static fn (): ContextualParser => self::charWhere(static fn (): bool => true),
         );
     }
 
