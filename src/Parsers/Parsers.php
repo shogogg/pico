@@ -161,16 +161,9 @@ final class Parsers
         if (mb_strlen($characters) === 0) {
             throw new ParserException('The character set must not be empty.');
         }
+
         $characterSet = array_fill_keys(mb_str_split($characters, 1, 'UTF-8'), true);
-
-        return self::create(static function (ParserInput $input) use ($characterSet): ParserResult {
-            if ($input->isAtEnd()) {
-                return failure();
-            }
-
-            $char = $input->current();
-            return isset($characterSet[$char]) ? success($char, 1) : failure();
-        });
+        return self::charWhere(static fn (string $x): bool => isset($characterSet[$x]));
     }
 
     /** @return ContextualParser<string> */
@@ -190,21 +183,12 @@ final class Parsers
             throw new ParserException('The range start must not exceed the range end.');
         }
 
-        return self::create(static function (ParserInput $input) use ($from, $to, $min, $max): ParserResult {
-            if ($input->isAtEnd()) {
-                return failure();
+        return self::charWhere(static function (string $x) use ($from, $to, $min, $max): bool {
+            if ($x === $from || $x === $to) {
+                return true;
             }
-
-            $char = $input->current();
-            if ($char === $from || $char === $to) {
-                return success($char, 1);
-            }
-
-            $codePoint = mb_ord($char, 'UTF-8');
-
-            return $codePoint >= $min && $codePoint <= $max
-                ? success($char, 1)
-                : failure();
+            $codePoint = mb_ord($x, 'UTF-8');
+            return $codePoint >= $min && $codePoint <= $max;
         });
     }
 
