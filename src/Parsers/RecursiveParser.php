@@ -50,16 +50,13 @@ final class RecursiveParser extends AbstractParser
      */
     private function resolveParser(): ContextualParser
     {
-        if ($this->parser !== null) {
-            return $this->parser;
+        if ($this->parser === null) {
+            if ($this->initialized) {
+                throw new ParserException('The recursive parser definition can only be initialized once.');
+            }
+            $this->initialized = true;
+            $this->parser = PicoInternal::asContextualParser(($this->definition)($this));
         }
-
-        if ($this->initialized) {
-            throw new ParserException('The recursive parser definition can only be initialized once.');
-        }
-
-        $this->initialized = true;
-
-        return $this->parser = PicoInternal::asContextualParser(($this->definition)($this));
+        return $this->parser;
     }
 }

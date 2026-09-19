@@ -18,48 +18,47 @@ use Pico\Internal\PicoInternal;
 /** @internal */
 final class Parsers
 {
-    /** @var array<string, ContextualParser<string>> */
+    /**
+     * Memoized parsers.
+     *
+     * @var array<string, ContextualParser<string>>
+     */
     private static array $parsers = [];
 
     private function __construct()
     {
-        // Nothing to do.
+        // Instantiation is not allowed.
     }
 
     /** @return ContextualParser<string> */
     public static function alpha(): ContextualParser
     {
-        return self::memoize(
-            'alpha',
-            fn (): Parser => self::ascii()->where(ctype_alpha(...)),
-        );
+        return self::memoize('alpha', fn (): Parser => self::charWhere(ctype_alpha(...)));
     }
 
     /** @return ContextualParser<string> */
     public static function alphaNum(): ContextualParser
     {
-        return self::memoize(
-            'alphaNum',
-            static fn (): Parser => self::ascii()->where(ctype_alnum(...)),
-        );
+        return self::memoize('alphaNum', static fn (): Parser => self::charWhere(ctype_alnum(...)));
     }
 
     /** @return ContextualParser<string> */
     public static function anyChar(): ContextualParser
     {
-        return self::memoize('anyChar', static fn (): ContextualParser => self::create(
-            static function (ParserInput $input): ParserResult {
+        return self::memoize('anyChar', static function (): ContextualParser {
+            return self::create(static function (ParserInput $input): ParserResult {
                 return $input->isAtEnd() ? failure() : success($input->current(), 1);
-            },
-        ));
+            });
+        });
     }
 
     /** @return ContextualParser<string> */
     public static function ascii(): ContextualParser
     {
-        return self::memoize('ascii', static fn (): ContextualParser => self::charWhere(
-            static fn (string $char): bool => strlen($char) === 1,
-        ));
+        return self::memoize(
+            'ascii',
+            static fn (): ContextualParser => self::charWhere(static fn (string $char): bool => strlen($char) === 1),
+        );
     }
 
     /** @return ContextualParser<string> */
@@ -71,12 +70,10 @@ final class Parsers
         if (mb_strlen($char) !== 1) {
             throw new ParserException('The character must be exactly one character long.');
         }
-
         return self::create(function (ParserInput $input) use ($char): ParserResult {
             if ($input->isAtEnd()) {
                 return failure();
             }
-
             return $input->current() === $char ? success($char, 1) : failure();
         });
     }
@@ -91,7 +88,6 @@ final class Parsers
             if ($input->isAtEnd()) {
                 return failure();
             }
-
             $char = $input->current();
             return $predicate($char) ? success($char, 1) : failure();
         });
@@ -107,12 +103,9 @@ final class Parsers
     {
         /** @extends AbstractParser<T> */
         return new class ($parse) extends AbstractParser {
-            private readonly Closure $parse;
-
             /** @param Closure(ParserInput): ParserResult<T> $parse */
-            public function __construct(Closure $parse)
+            public function __construct(private readonly Closure $parse)
             {
-                $this->parse = $parse;
             }
 
             /** @return ParserResult<T> */
@@ -126,10 +119,7 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function digit(): ContextualParser
     {
-        return self::memoize(
-            'digit',
-            static fn (): Parser => self::ascii()->where(ctype_digit(...)),
-        );
+        return self::memoize('digit', static fn (): Parser => self::charWhere(ctype_digit(...)));
     }
 
     /** @return ContextualParser<string> */
@@ -181,31 +171,29 @@ final class Parsers
             throw new ParserException('Range bounds must be exactly one UTF-8 character.');
         }
 
-        $minCodePoint = mb_ord($from, 'UTF-8');
-        $maxCodePoint = mb_ord($to, 'UTF-8');
+        $min = mb_ord($from, 'UTF-8');
+        $max = mb_ord($to, 'UTF-8');
 
-        if ($minCodePoint > $maxCodePoint) {
+        if ($min > $max) {
             throw new ParserException('The range start must not exceed the range end.');
         }
 
-        return self::create(
-            static function (ParserInput $input) use ($from, $to, $minCodePoint, $maxCodePoint): ParserResult {
-                if ($input->isAtEnd()) {
-                    return failure();
-                }
+        return self::create(static function (ParserInput $input) use ($from, $to, $min, $max): ParserResult {
+            if ($input->isAtEnd()) {
+                return failure();
+            }
 
-                $char = $input->current();
-                if ($char === $from || $char === $to) {
-                    return success($char, 1);
-                }
+            $char = $input->current();
+            if ($char === $from || $char === $to) {
+                return success($char, 1);
+            }
 
-                $codePoint = mb_ord($char, 'UTF-8');
+            $codePoint = mb_ord($char, 'UTF-8');
 
-                return $codePoint >= $minCodePoint && $codePoint <= $maxCodePoint
-                    ? success($char, 1)
-                    : failure();
-            },
-        );
+            return $codePoint >= $min && $codePoint <= $max
+                ? success($char, 1)
+                : failure();
+        });
     }
 
     /** @return ContextualParser<string> */
@@ -236,28 +224,20 @@ final class Parsers
             if ($expected === '') {
                 return failure();
             }
-            return $input->startsWith($expected)
-                ? success($expected, $length)
-                : failure();
+            return $input->startsWith($expected) ? success($expected, $length) : failure();
         });
     }
 
     /** @return ContextualParser<string> */
     public static function whitespace(): ContextualParser
     {
-        return self::memoize(
-            'whitespace',
-            static fn (): Parser => self::ascii()->where(ctype_space(...)),
-        );
+        return self::memoize('whitespace', static fn (): Parser => self::charWhere(ctype_space(...)));
     }
 
     /** @return ContextualParser<string> */
     public static function whitespaces(): ContextualParser
     {
-        return self::memoize(
-            'whitespaces',
-            static fn (): ContextualParser => self::regexp('[ \\t\\r\\n\\f\\v]+'),
-        );
+        return self::memoize('whitespaces', static fn (): ContextualParser => self::regexp("[ \t\r\n\f\v]+"));
     }
 
     /**

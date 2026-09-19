@@ -20,12 +20,9 @@ use Pico\Parsers\ContextualParser;
  */
 final class PicoInternal
 {
-    /**
-     * {@see PicoInternal} constructor.
-     */
     private function __construct()
     {
-        // Nothing to do.
+        // Instantiation is not allowed.
     }
 
     /**
@@ -34,12 +31,11 @@ final class PicoInternal
      * @template T
      * @param Parser<T> $parser
      * @return ContextualParser<T>
-     * @throws ParserException When the parser does not implement ContextualParser.
      * @internal
      */
     public static function asContextualParser(Parser $parser): ContextualParser
     {
-        self::ensureContextualParser($parser);
+        assert($parser instanceof ContextualParser);
         return $parser;
     }
 
@@ -48,33 +44,11 @@ final class PicoInternal
      *
      * @param Parser<*> $parser
      * @return ContextualParser<*>
-     * @throws ParserException When the parser does not implement ContextualParser.
      * @internal
      */
     public static function asUntypedContextualParser(Parser $parser): ContextualParser
     {
-        if (!($parser instanceof ContextualParser)) {
-            $className = $parser::class;
-            throw new ParserException($className . ' is not a ContextualParser');
-        }
-
+        assert($parser instanceof ContextualParser);
         return $parser;
-    }
-
-    /**
-     * Ensures that the parser supports parsing from a ParserInput.
-     *
-     * @template T
-     * @param Parser<T> $parser
-     * @phpstan-assert ContextualParser<T> $parser
-     * @psalm-assert ContextualParser<T> $parser
-     * @throws ParserException When the parser does not implement ContextualParser.
-     */
-    public static function ensureContextualParser(Parser $parser): void
-    {
-        if (!($parser instanceof ContextualParser)) {
-            $className = $parser::class;
-            throw new ParserException($className . ' is not a ContextualParser');
-        }
     }
 }

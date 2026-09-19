@@ -19,7 +19,7 @@ final class Combinators
 {
     private function __construct()
     {
-        // Nothing to do.
+        // Instantiation is not allowed.
     }
 
     /**
@@ -45,17 +45,17 @@ final class Combinators
     }
 
     /**
-     * @template TOpen
-     * @template TContent
-     * @template TClose
-     * @param Parser<TOpen> $open
-     * @param Parser<TContent> $content
-     * @param Parser<TClose> $close
-     * @return ContextualParser<TContent>
+     * @template A
+     * @template B
+     * @template C
+     * @param Parser<A> $open
+     * @param Parser<B> $content
+     * @param Parser<C> $close
+     * @return ContextualParser<B>
      */
     public static function between(Parser $open, Parser $content, Parser $close): ContextualParser
     {
-        /** @var ContextualParser<TContent> $parser */
+        /** @var ContextualParser<B> $parser */
         $parser = self::seq($open, $content, $close)->map(static fn (array $outputs): mixed => $outputs[1]);
         return PicoInternal::asContextualParser($parser);
     }
@@ -81,13 +81,13 @@ final class Combinators
     }
 
     /**
-     * @template TLeft
-     * @template TRight
-     * @template TSeparator
-     * @param Parser<TLeft> $left
-     * @param Parser<TRight> $right
-     * @param Parser<TSeparator>|null $sep
-     * @return ContextualParser<array{TLeft, TRight}>
+     * @template L
+     * @template R
+     * @template S
+     * @param Parser<L> $left
+     * @param Parser<R> $right
+     * @param Parser<S>|null $sep
+     * @return ContextualParser<array{L, R}>
      */
     public static function pair(Parser $left, Parser $right, ?Parser $sep = null): ContextualParser
     {
@@ -99,11 +99,11 @@ final class Combinators
     }
 
     /**
-     * @template TContent
-     * @template TSeparator
-     * @param Parser<TContent> $content
-     * @param Parser<TSeparator> $separator
-     * @return ContextualParser<list<TContent>>
+     * @template T
+     * @template S
+     * @param Parser<T> $content
+     * @param Parser<S> $separator
+     * @return ContextualParser<list<T>>
      */
     public static function sepBy(Parser $content, Parser $separator, int $min = 0): ContextualParser
     {
@@ -163,7 +163,6 @@ final class Combinators
         foreach ($parsers as $parser) {
             $contextualParsers[] = PicoInternal::asUntypedContextualParser($parser);
         }
-
         return Parsers::create(function (ParserInput $input) use ($contextualParsers): ParserResult {
             $consumedLength = 0;
             $currentInput = $input;
@@ -184,11 +183,11 @@ final class Combinators
     }
 
     /**
-     * @template TLeft
-     * @template TRight
-     * @param Parser<TLeft> $left
-     * @param Parser<TRight> $right
-     * @return ContextualParser<TRight>
+     * @template L
+     * @template R
+     * @param Parser<L> $left
+     * @param Parser<R> $right
+     * @return ContextualParser<R>
      */
     public static function skipLeft(Parser $left, Parser $right): ContextualParser
     {
@@ -197,11 +196,11 @@ final class Combinators
     }
 
     /**
-     * @template TLeft
-     * @template TRight
-     * @param Parser<TLeft> $left
-     * @param Parser<TRight> $right
-     * @return ContextualParser<TLeft>
+     * @template L
+     * @template R
+     * @param Parser<L> $left
+     * @param Parser<R> $right
+     * @return ContextualParser<L>
      */
     public static function skipRight(Parser $left, Parser $right): ContextualParser
     {

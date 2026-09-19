@@ -41,12 +41,12 @@ final readonly class ParserInput
             throw new ParserInputException('The input must be valid UTF-8.');
         }
 
-        $this->length = mb_strlen($this->input, 'UTF-8');
-
-        if ($this->offset < 0 || $this->offset > $this->length) {
+        $length = mb_strlen($this->input, 'UTF-8');
+        if ($this->offset < 0 || $this->offset > $length) {
             throw new ParserInputException('The offset must be within the input.');
         }
 
+        $this->length = $length;
         $this->byteOffset = self::byteOffsetAfter($this->input, 0, $this->offset);
     }
 
@@ -57,8 +57,7 @@ final readonly class ParserInput
      */
     public function advanced(int $length): self
     {
-        $this->assertCanConsume($length);
-
+        $this->ensureCanConsume($length);
         return clone($this, [
             'byteOffset' => self::byteOffsetAfter($this->input, $this->byteOffset, $length),
             'offset' => $this->offset + $length,
@@ -83,7 +82,6 @@ final readonly class ParserInput
         if ($length < 0) {
             throw new ParserInputException('The length must not be negative.');
         }
-
         return $length <= $this->length - $this->offset;
     }
 
@@ -125,7 +123,7 @@ final readonly class ParserInput
      */
     public function take(int $length): string
     {
-        $this->assertCanConsume($length);
+        $this->ensureCanConsume($length);
 
         $end = self::byteOffsetAfter($this->input, $this->byteOffset, $length);
 
@@ -133,9 +131,11 @@ final readonly class ParserInput
     }
 
     /**
+     * Throws an exception if the input cannot be consumed.
+     *
      * @throws ParserInputException When the length cannot be consumed.
      */
-    private function assertCanConsume(int $length): void
+    private function ensureCanConsume(int $length): void
     {
         if (!$this->canConsume($length)) {
             throw new ParserInputException('The requested length exceeds the remaining input.');
@@ -165,8 +165,6 @@ final readonly class ParserInput
         for ($i = 0; $i < $length; ++$i) {
             $byteOffset += self::byteLengthAt($input, $byteOffset);
         }
-
         return $byteOffset;
     }
-
 }
