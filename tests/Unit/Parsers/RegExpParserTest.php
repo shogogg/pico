@@ -15,8 +15,11 @@ use Pico\Parsers\RegExpParser;
 
 describe('RegExpParser::parseInput', function (): void {
     it('should match the pattern at the current input offset', function (): void {
+        // Arrange
+        $input = ParserInput::of('_ABC')->advanced(1);
+
         // Act
-        $actual = new RegExpParser('[A-Z]+')->parseInput(new ParserInput('_ABC', 1));
+        $actual = new RegExpParser('[A-Z]+')->parseInput($input);
 
         // Assert
         expect($actual)->toBeSuccessOf('ABC', 3);
@@ -24,7 +27,7 @@ describe('RegExpParser::parseInput', function (): void {
 
     it('should preserve Unicode character lengths', function (): void {
         // Act
-        $actual = new RegExpParser('[あ-お]+')->parseInput(new ParserInput('あいうえお'));
+        $actual = new RegExpParser('[あ-お]+')->parseInput(ParserInput::of('あいうえお'));
 
         // Assert
         expect($actual)->toBeSuccessOf('あいうえお', 5);
@@ -32,7 +35,7 @@ describe('RegExpParser::parseInput', function (): void {
 
     it('should fail when the pattern does not match at the current input offset', function (): void {
         // Act
-        $actual = new RegExpParser('[A-Z]+')->parseInput(new ParserInput('aABC'));
+        $actual = new RegExpParser('[A-Z]+')->parseInput(ParserInput::of('aABC'));
 
         // Assert
         expect($actual)->toBeFailure();
@@ -51,7 +54,7 @@ describe('RegExpParser::parseInput', function (): void {
             ini_set('pcre.backtrack_limit', '0');
 
             // Act
-            $action = static fn () => $parser->parseInput(new ParserInput('a'));
+            $action = static fn () => $parser->parseInput(ParserInput::of('a'));
 
             // Assert
             expect($action)->toThrow(

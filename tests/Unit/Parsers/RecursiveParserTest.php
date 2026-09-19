@@ -26,7 +26,7 @@ describe('RecursiveParser::parseInput', function (): void {
         });
 
         // Act
-        $actual = $parser->parseInput(new ParserInput('((x))'));
+        $actual = $parser->parseInput(ParserInput::of('((x))'));
 
         // Assert
         expect($actual)->toBeSuccessOf('x', 5);
@@ -45,8 +45,8 @@ describe('RecursiveParser::parseInput', function (): void {
         });
 
         // Act
-        $parser->parseInput(new ParserInput('(x)'));
-        $parser->parseInput(new ParserInput('x'));
+        $parser->parseInput(ParserInput::of('(x)'));
+        $parser->parseInput(ParserInput::of('x'));
 
         // Assert
         expect($calls)->toBe(1);
@@ -59,7 +59,7 @@ describe('RecursiveParser::parseInput', function (): void {
             return Pico::char('x');
         });
 
-        $parser->parseInput(new ParserInput('x'));
+        $parser->parseInput(ParserInput::of('x'));
     })->throws(ParserException::class, 'The recursive parser definition can only be initialized once.');
 
     it('should propagate an exception thrown while evaluating the definition', function (): void {
@@ -69,7 +69,7 @@ describe('RecursiveParser::parseInput', function (): void {
         });
 
         // Act
-        $action = static fn () => $parser->parseInput(new ParserInput('x'));
+        $action = static fn () => $parser->parseInput(ParserInput::of('x'));
 
         // Assert
         expect($action)->toThrow(\LogicException::class, 'Definition failed.');
@@ -86,12 +86,12 @@ describe('RecursiveParser::parseInput', function (): void {
 
         // Arrange the failed initialization state.
         try {
-            $parser->parseInput(new ParserInput('x'));
+            $parser->parseInput(ParserInput::of('x'));
         } catch (\LogicException) {
         }
 
         // Act
-        $action = static fn () => $parser->parseInput(new ParserInput('x'));
+        $action = static fn () => $parser->parseInput(ParserInput::of('x'));
 
         // Assert
         expect($action)

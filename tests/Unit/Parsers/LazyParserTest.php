@@ -18,7 +18,7 @@ describe('LazyParser::parseInput', function (): void {
     it('should delegate parsing to the parser returned by the factory', function (): void {
         // Act
         $actual = new LazyParser(static fn (): Parser => Pico::char('A'))
-            ->parseInput(new ParserInput('ABC'));
+            ->parseInput(ParserInput::of('ABC'));
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);
@@ -36,7 +36,7 @@ describe('LazyParser::parseInput', function (): void {
         expect($wasCalled)->toBeFalse();
 
         // Act
-        $parser->parseInput(new ParserInput('ABC'));
+        $parser->parseInput(ParserInput::of('ABC'));
 
         // Assert
         expect($wasCalled)->toBeTrue();
@@ -51,8 +51,8 @@ describe('LazyParser::parseInput', function (): void {
         });
 
         // Act
-        $parser->parseInput(new ParserInput('ABC'));
-        $parser->parseInput(new ParserInput('ABC'));
+        $parser->parseInput(ParserInput::of('ABC'));
+        $parser->parseInput(ParserInput::of('ABC'));
 
         // Assert
         expect($calls)->toBe(1);

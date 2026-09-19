@@ -17,37 +17,33 @@ use Pico\Exceptions\ParserInputException;
 final readonly class ParserInput
 {
     /**
-     * The current offset in bytes.
-     */
-    private int $byteOffset;
-
-    /**
-     * The input length in characters.
-     */
-    private int $length;
-
-    /**
-     * {@see ParserInput} constructor.
-     *
      * @param string $input The complete UTF-8 input string.
      * @param int $offset The current character offset.
-     * @throws ParserInputException When the input or offset is invalid.
+     * @param int $length The input length in characters.
+     * @param int $byteOffset The current offset in bytes.
      */
-    public function __construct(
+    private function __construct(
         public string $input,
-        public int $offset = 0,
+        public int $offset,
+        private int $length,
+        private int $byteOffset,
     ) {
-        if (!mb_check_encoding($this->input, 'UTF-8')) {
+    }
+
+    /**
+     * Creates a parser input at the beginning of the given input.
+     *
+     * @param string $input The complete UTF-8 input string.
+     * @throws ParserInputException When the input is invalid.
+     */
+    public static function of(string $input): self
+    {
+        if (!mb_check_encoding($input, 'UTF-8')) {
             throw new ParserInputException('The input must be valid UTF-8.');
         }
 
-        $length = mb_strlen($this->input, 'UTF-8');
-        if ($this->offset < 0 || $this->offset > $length) {
-            throw new ParserInputException('The offset must be within the input.');
-        }
-
-        $this->length = $length;
-        $this->byteOffset = self::byteOffsetAfter($this->input, 0, $this->offset);
+        $length = mb_strlen($input, 'UTF-8');
+        return new self($input, offset: 0, length: $length, byteOffset: 0);
     }
 
     /**

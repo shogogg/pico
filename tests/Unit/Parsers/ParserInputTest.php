@@ -10,54 +10,43 @@ declare(strict_types=1);
 use Pico\Exceptions\ParserInputException;
 use Pico\Parsers\ParserInput;
 
-describe('ParserInput', function (): void {
-    it('should reject invalid UTF-8 input', function (): void {
-        // Act
-        $action = fn (): ParserInput => new ParserInput(chr(255));
-
-        // Assert
-        expect($action)->toThrow(ParserInputException::class, 'The input must be valid UTF-8.');
-    });
-
-    it('should reject an offset outside the input', function (int $offset): void {
-        // Act
-        $action = fn (): ParserInput => new ParserInput('abc', $offset);
-
-        // Assert
-        expect($action)->toThrow(ParserInputException::class, 'The offset must be within the input.');
-    })->with([-1, 4]);
-});
-
 describe('ParserInput::advanced', function (): void {
-    it('should return a new input with the character offset advanced', function (): void {
+    it('should advance by the requested character length', function (): void {
+        // Arrange
+        $input = ParserInput::of('a😀b');
+
         // Act
-        $actual = new ParserInput('a😀b', 1)->advanced(1);
+        $actual = $input->advanced(2);
 
         // Assert
-        expect($actual)
-            ->input->toBe('a😀b')
-            ->offset->toBe(2);
+        expect($actual->offset)->toBe(2);
     });
 
     it('should reject a negative character length', function (): void {
         // Act
-        $action = fn (): ParserInput => new ParserInput('abc')->advanced(-1);
+        $action = fn (): ParserInput => ParserInput::of('abc')->advanced(-1);
 
         // Assert
         expect($action)->toThrow(ParserInputException::class, 'The length must not be negative.');
     });
 
     it('should reject a character length that cannot be consumed', function (): void {
+        // Arrange
+        $input = ParserInput::of('abc')->advanced(2);
+
         // Act
-        $action = fn (): ParserInput => new ParserInput('abc', 2)->advanced(2);
+        $action = fn (): ParserInput => $input->advanced(2);
 
         // Assert
         expect($action)->toThrow(ParserInputException::class, 'The requested length exceeds the remaining input.');
     });
 
     it('should keep the offset when advancing by zero characters', function (): void {
+        // Arrange
+        $input = ParserInput::of('abc')->advanced(1);
+
         // Act
-        $actual = new ParserInput('abc', 1)->advanced(0);
+        $actual = $input->advanced(0);
 
         // Assert
         expect($actual->offset)->toBe(1);
@@ -66,8 +55,11 @@ describe('ParserInput::advanced', function (): void {
 
 describe('ParserInput::byteOffset', function (): void {
     it('should return the current byte offset', function (): void {
+        // Arrange
+        $input = ParserInput::of('aあい')->advanced(2);
+
         // Act
-        $actual = new ParserInput('aあい', 2)->byteOffset();
+        $actual = $input->byteOffset();
 
         // Assert
         expect($actual)->toBe(4);
@@ -81,11 +73,14 @@ describe('ParserInput::canConsume', function (): void {
         int $length,
         bool $expected,
     ): void {
+        // Arrange
+        $parserInput = ParserInput::of($input)->advanced($offset);
+
         // Act
-        $actual = new ParserInput($input, $offset);
+        $actual = $parserInput->canConsume($length);
 
         // Assert
-        expect($actual->canConsume($length))->toBe($expected);
+        expect($actual)->toBe($expected);
     })->with([
         ['abc', 0, 0, true],
         ['abc', 1, 2, true],
@@ -98,7 +93,7 @@ describe('ParserInput::canConsume', function (): void {
 
     it('should reject a negative character length', function (): void {
         // Act
-        $action = fn (): bool => new ParserInput('abc')->canConsume(-1);
+        $action = fn (): bool => ParserInput::of('abc')->canConsume(-1);
 
         // Assert
         expect($action)->toThrow(ParserInputException::class, 'The length must not be negative.');
@@ -107,16 +102,22 @@ describe('ParserInput::canConsume', function (): void {
 
 describe('ParserInput::current', function (): void {
     it('should return the current character', function (): void {
+        // Arrange
+        $input = ParserInput::of('a😀b')->advanced(1);
+
         // Act
-        $actual = new ParserInput('a😀b', 1)->current();
+        $actual = $input->current();
 
         // Assert
         expect($actual)->toBe('😀');
     });
 
     it('should reject an input at its end', function (): void {
+        // Arrange
+        $input = ParserInput::of('a')->advanced(1);
+
         // Act
-        $action = fn (): string => new ParserInput('a', 1)->current();
+        $action = fn (): string => $input->current();
 
         // Assert
         expect($action)->toThrow(ParserInputException::class, 'The requested length exceeds the remaining input.');
@@ -129,17 +130,40 @@ describe('ParserInput::isAtEnd', function (): void {
         int $offset,
         bool $expected,
     ): void {
+        // Arrange
+        $parserInput = ParserInput::of($input)->advanced($offset);
+
         // Act
-        $actual = new ParserInput($input, $offset);
+        $actual = $parserInput->isAtEnd();
 
         // Assert
-        expect($actual->isAtEnd())->toBe($expected);
+        expect($actual)->toBe($expected);
     })->with([
         ['', 0, true],
         ['abc', 2, false],
         ['abc', 3, true],
         ['a😀', 2, true],
     ]);
+});
+
+describe('ParserInput::of', function (): void {
+    it('should create an input at the beginning', function (): void {
+        // Act
+        $actual = ParserInput::of('a😀b');
+
+        // Assert
+        expect($actual)
+            ->input->toBe('a😀b')
+            ->offset->toBe(0);
+    });
+
+    it('should reject invalid UTF-8 input', function (): void {
+        // Act
+        $action = fn (): ParserInput => ParserInput::of(chr(255));
+
+        // Assert
+        expect($action)->toThrow(ParserInputException::class, 'The input must be valid UTF-8.');
+    });
 });
 
 describe('ParserInput::startsWith', function (): void {
@@ -149,11 +173,14 @@ describe('ParserInput::startsWith', function (): void {
         string $expected,
         bool $matches,
     ): void {
+        // Arrange
+        $parserInput = ParserInput::of($input)->advanced($offset);
+
         // Act
-        $actual = new ParserInput($input, $offset);
+        $actual = $parserInput->startsWith($expected);
 
         // Assert
-        expect($actual->startsWith($expected))->toBe($matches);
+        expect($actual)->toBe($matches);
     })->with([
         ['abcdef', 0, 'abc', true],
         ['xabcdef', 1, 'abc', true],
@@ -165,16 +192,22 @@ describe('ParserInput::startsWith', function (): void {
 
 describe('ParserInput::take', function (): void {
     it('should return the requested characters from the current offset', function (): void {
+        // Arrange
+        $input = ParserInput::of('a😀b')->advanced(1);
+
         // Act
-        $actual = new ParserInput('a😀b', 1)->take(2);
+        $actual = $input->take(2);
 
         // Assert
         expect($actual)->toBe('😀b');
     });
 
     it('should reject a character length that cannot be consumed', function (): void {
+        // Arrange
+        $input = ParserInput::of('abc')->advanced(2);
+
         // Act
-        $action = fn (): string => new ParserInput('abc', 2)->take(2);
+        $action = fn (): string => $input->take(2);
 
         // Assert
         expect($action)->toThrow(ParserInputException::class, 'The requested length exceeds the remaining input.');

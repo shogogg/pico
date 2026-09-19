@@ -30,7 +30,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     /** {@inheritDoc} */
     final public function parse(string $input): ParserResult
     {
-        return $this->parseInput(new ParserInput($input));
+        return $this->parseInput(ParserInput::of($input));
     }
 
     /** {@inheritDoc} */
@@ -60,7 +60,7 @@ abstract class AbstractParser implements Parser, ContextualParser
     final public function except(Parser $except): Parser
     {
         assert($except instanceof ContextualParser);
-        return Parsers::create(function (ParserInput $input) use ($except): ParserResult {
+        return self::create(function (ParserInput $input) use ($except): ParserResult {
             return $except->parseInput($input)->isSuccess()
                 ? failure()
                 : $this->parseInput($input);
