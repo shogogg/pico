@@ -33,23 +33,32 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function alpha(): ContextualParser
     {
-        return self::memoize('alpha', fn (): Parser => self::charWhere(ctype_alpha(...)));
+        return self::memoize(
+            'alpha',
+            static fn (): Parser => self::charWhere(ctype_alpha(...)),
+        );
     }
 
     /** @return ContextualParser<string> */
     public static function alphaNum(): ContextualParser
     {
-        return self::memoize('alphaNum', static fn (): Parser => self::charWhere(ctype_alnum(...)));
+        return self::memoize(
+            'alphaNum',
+            static fn (): Parser => self::charWhere(ctype_alnum(...)),
+        );
     }
 
     /** @return ContextualParser<string> */
     public static function anyChar(): ContextualParser
     {
-        return self::memoize('anyChar', static function (): ContextualParser {
-            return self::create(static function (ParserInput $input): ParserResult {
-                return $input->isAtEnd() ? failure() : success($input->current(), 1);
-            });
-        });
+        return self::memoize(
+            'anyChar',
+            static fn (): ContextualParser => self::create(
+                static fn (ParserInput $input): ParserResult => $input->isAtEnd()
+                    ? failure()
+                    : success($input->current(), 1)
+            ),
+        );
     }
 
     /** @return ContextualParser<string> */
@@ -57,7 +66,7 @@ final class Parsers
     {
         return self::memoize(
             'ascii',
-            static fn (): ContextualParser => self::charWhere(static fn (string $char): bool => strlen($char) === 1),
+            static fn (): ContextualParser => self::charWhere(static fn (string $x): bool => strlen($x) === 1),
         );
     }
 
@@ -70,12 +79,7 @@ final class Parsers
         if (mb_strlen($char) !== 1) {
             throw new ParserException('The character must be exactly one character long.');
         }
-        return self::create(function (ParserInput $input) use ($char): ParserResult {
-            if ($input->isAtEnd()) {
-                return failure();
-            }
-            return $input->current() === $char ? success($char, 1) : failure();
-        });
+        return self::charWhere(static fn (string $x): bool => $x === $char);
     }
 
     /**
@@ -119,15 +123,23 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function digit(): ContextualParser
     {
-        return self::memoize('digit', static fn (): Parser => self::charWhere(ctype_digit(...)));
+        return self::memoize(
+            'digit',
+            static fn (): Parser => self::charWhere(ctype_digit(...)),
+        );
     }
 
     /** @return ContextualParser<string> */
     public static function eof(): ContextualParser
     {
-        return self::memoize('eof', static fn (): ContextualParser => self::create(
-            static fn (ParserInput $input): ParserResult => $input->isAtEnd() ? success('', 0) : failure(),
-        ));
+        return self::memoize(
+            'eof',
+            static fn (): ContextualParser => self::create(
+                static fn (ParserInput $input): ParserResult => $input->isAtEnd()
+                    ? success('', 0)
+                    : failure(),
+            ),
+        );
     }
 
     /**
@@ -215,15 +227,15 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function string(string $expected): ContextualParser
     {
+        if ($expected === '') {
+            return self::failure();
+        }
         if (!mb_check_encoding($expected, 'UTF-8')) {
             throw new ParserException('The expected string must be valid UTF-8.');
         }
-        $length = mb_strlen($expected, 'UTF-8');
 
+        $length = mb_strlen($expected, 'UTF-8');
         return self::create(static function (ParserInput $input) use ($expected, $length): ParserResult {
-            if ($expected === '') {
-                return failure();
-            }
             return $input->startsWith($expected) ? success($expected, $length) : failure();
         });
     }
@@ -231,19 +243,35 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function whitespace(): ContextualParser
     {
-        return self::memoize('whitespace', static fn (): Parser => self::charWhere(ctype_space(...)));
+        return self::memoize(
+            'whitespace',
+            static fn (): Parser => self::charWhere(ctype_space(...)),
+        );
     }
 
     /** @return ContextualParser<string> */
     public static function whitespaces(): ContextualParser
     {
-        return self::memoize('whitespaces', static fn (): ContextualParser => self::regexp("[ \t\r\n\f\v]+"));
+        return self::memoize(
+            'whitespaces',
+            static fn (): ContextualParser => self::regexp("[ \t\r\n\f\v]+"),
+        );
+    }
+
+    /** @return ContextualParser<never> */
+    private static function failure(): ContextualParser
+    {
+        return self::memoize(
+            'failure',
+            static fn (): ContextualParser => self::create(static fn (): ParserResult => failure()),
+        );
     }
 
     /**
+     * @template T
      * @param non-empty-string $key
-     * @param Closure(): Parser<string> $init
-     * @return ContextualParser<string>
+     * @param Closure(): Parser<T> $init
+     * @return ContextualParser<T>
      */
     private static function memoize(string $key, Closure $init): ContextualParser
     {
