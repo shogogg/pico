@@ -193,10 +193,9 @@ abstract class AbstractParser implements Parser, ContextualParser
     {
         return self::create(function (ParserInput $input) use ($predicate): ParserResult {
             $result = $this->parseInput($input);
-            if ($result->isFailure()) {
-                return $result;
-            }
-            return $predicate($result->output()) ? $result : failure();
+            return $result->isSuccess() && $predicate($result->output())
+                ? $result
+                : failure();
         });
     }
 
@@ -209,12 +208,9 @@ abstract class AbstractParser implements Parser, ContextualParser
     {
         /** @extends AbstractParser<T> */
         return new class ($parse) extends AbstractParser {
-            private readonly Closure $parse;
-
             /** @param Closure(ParserInput): ParserResult<T> $parse */
-            public function __construct(Closure $parse)
+            public function __construct(private readonly Closure $parse)
             {
-                $this->parse = $parse;
             }
 
             /** @return ParserResult<T> */
