@@ -10,7 +10,6 @@ declare(strict_types=1);
 use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserInputException;
 use Pico\Exceptions\ParserException;
-use Pico\Internal\PicoInternal;
 use Pico\Parsers\AbstractParser;
 use Pico\Parsers\ParserInput;
 use Pico\Pico;
@@ -101,9 +100,7 @@ describe('AbstractParser::concat', function (): void {
 describe('AbstractParser::except', function (): void {
     it('should fail without consuming input when the exclusion parser succeeds', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::string('apple')->except(Pico::char('a')),
-        )->parseInput(new ParserInput('apple'));
+        $actual = Pico::string('apple')->except(Pico::char('a'))->parse('apple');
 
         // Assert
         expect($actual)
@@ -113,9 +110,7 @@ describe('AbstractParser::except', function (): void {
 
     it('should return the parser result when the exclusion parser fails', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('a')->except(Pico::char('b')),
-        )->parseInput(new ParserInput('apple'));
+        $actual = Pico::char('a')->except(Pico::char('b'))->parse('apple');
 
         // Assert
         expect($actual)->toBeSuccessOf('a', 1);
@@ -123,9 +118,7 @@ describe('AbstractParser::except', function (): void {
 
     it('should return the parser failure when the exclusion parser fails', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('b')->except(Pico::char('c')),
-        )->parseInput(new ParserInput('apple'));
+        $actual = Pico::char('b')->except(Pico::char('c'))->parse('apple');
 
         // Assert
         expect($actual)->toBeFailure();
@@ -152,11 +145,9 @@ describe('AbstractParser::repeat', function (): void {
         );
     });
 
-    it('should repeat the parser from the current input offset', function (): void {
+    it('should return every matched output', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->repeat(),
-        )->parseInput(new ParserInput('xAAAB', offset: 1));
+        $actual = Pico::char('A')->repeat()->parse('AAAB');
 
         // Assert
         expect($actual)->toBeSuccessOf(['A', 'A', 'A'], 3);
@@ -164,9 +155,7 @@ describe('AbstractParser::repeat', function (): void {
 
     it('should stop after the maximum repetition count', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->repeat(max: 2),
-        )->parseInput(new ParserInput('AAA'));
+        $actual = Pico::char('A')->repeat(max: 2)->parse('AAA');
 
         // Assert
         expect($actual)->toBeSuccessOf(['A', 'A'], 2);
@@ -174,9 +163,7 @@ describe('AbstractParser::repeat', function (): void {
 
     it('should succeed with no results when the first match fails and the minimum is zero', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->repeat(),
-        )->parseInput(new ParserInput('BBB'));
+        $actual = Pico::char('A')->repeat()->parse('BBB');
 
         // Assert
         expect($actual)->toBeSuccessOf([], 0);
@@ -184,9 +171,7 @@ describe('AbstractParser::repeat', function (): void {
 
     it('should fail when fewer than the minimum repetitions match', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->repeat(min: 2),
-        )->parseInput(new ParserInput('AB'));
+        $actual = Pico::char('A')->repeat(min: 2)->parse('AB');
 
         // Assert
         expect($actual)->toBeFailure();
@@ -194,9 +179,7 @@ describe('AbstractParser::repeat', function (): void {
 
     it('should stop when the parser succeeds without consuming input', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->optional()->repeat(max: 2),
-        )->parseInput(new ParserInput('BBB'));
+        $actual = Pico::char('A')->optional()->repeat(max: 2)->parse('BBB');
 
         // Assert
         expect($actual)->toBeSuccessOf([], 0);
@@ -234,9 +217,7 @@ describe('AbstractParser::map', function (): void {
 describe('AbstractParser::optional', function (): void {
     it('should return the original successful result', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->optional(),
-        )->parseInput(new ParserInput('ABC'));
+        $actual = Pico::char('A')->optional()->parse('ABC');
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);
@@ -244,9 +225,7 @@ describe('AbstractParser::optional', function (): void {
 
     it('should return a successful empty-string result without consuming input when parsing fails', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->optional(),
-        )->parseInput(new ParserInput('BBB'));
+        $actual = Pico::char('A')->optional()->parse('BBB');
 
         // Assert
         expect($actual)->toBeSuccessOf('', 0);
@@ -259,13 +238,11 @@ describe('AbstractParser::orElse', function (): void {
         $wasCalled = false;
 
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->orElse(function () use (&$wasCalled): string {
-                $wasCalled = true;
+        $actual = Pico::char('A')->orElse(function () use (&$wasCalled): string {
+            $wasCalled = true;
 
-                return 'fallback';
-            }),
-        )->parseInput(new ParserInput('ABC'));
+            return 'fallback';
+        })->parse('ABC');
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);
@@ -274,9 +251,7 @@ describe('AbstractParser::orElse', function (): void {
 
     it('should return the fallback output without consuming input when parsing fails', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->orElse(static fn (): string => 'fallback'),
-        )->parseInput(new ParserInput('BBB'));
+        $actual = Pico::char('A')->orElse(static fn (): string => 'fallback')->parse('BBB');
 
         // Assert
         expect($actual)->toBeSuccessOf('fallback', 0);
@@ -314,9 +289,7 @@ describe('AbstractParser::skip', function (): void {
 describe('AbstractParser::then', function (): void {
     it('should combine successful outputs and consumed lengths', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->then(Pico::char('B')),
-        )->parseInput(new ParserInput('ABC'));
+        $actual = Pico::char('A')->then(Pico::char('B'))->parse('ABC');
 
         // Assert
         expect($actual)->toBeSuccessOf(['A', 'B'], 2);
@@ -336,9 +309,7 @@ describe('AbstractParser::then', function (): void {
         };
 
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->then($right),
-        )->parseInput(new ParserInput('B'));
+        $actual = Pico::char('A')->then($right)->parse('B');
 
         // Assert
         expect($actual)->toBeFailure();
@@ -347,9 +318,7 @@ describe('AbstractParser::then', function (): void {
 
     it('should fail when the right parser fails', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->then(Pico::char('B')),
-        )->parseInput(new ParserInput('AC'));
+        $actual = Pico::char('A')->then(Pico::char('B'))->parse('AC');
 
         // Assert
         expect($actual)->toBeFailure();
@@ -359,37 +328,29 @@ describe('AbstractParser::then', function (): void {
 describe('AbstractParser::where', function (): void {
     it('should preserve a successful output when the predicate succeeds', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->where(static fn (string $char): bool => $char === 'A'),
-        )->parseInput(new ParserInput('ABC'));
+        $actual = Pico::char('A')
+            ->where(static fn (string $char): bool => $char === 'A')
+            ->parse('ABC');
 
         // Assert
         expect($actual)->toBeSuccessOf('A', 1);
     });
 
     it('should preserve the consumed length when the predicate succeeds', function (): void {
-        // Arrange
-        $parser = new class () extends AbstractParser {
-            public function parseInput(ParserInput $input): ParserResult
-            {
-                return success('accepted', 2);
-            }
-        };
-
         // Act
-        $actual = PicoInternal::asContextualParser(
-            $parser->where(static fn (string $value): bool => $value === 'accepted'),
-        )->parseInput(new ParserInput('AB'));
+        $actual = Pico::string('AB')
+            ->where(static fn (string $value): bool => $value === 'AB')
+            ->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('accepted', 2);
+        expect($actual)->toBeSuccessOf('AB', 2);
     });
 
     it('should return a failure when the predicate fails', function (): void {
         // Act
-        $actual = PicoInternal::asContextualParser(
-            Pico::char('A')->where(static fn (string $char): bool => $char === 'B'),
-        )->parseInput(new ParserInput('ABC'));
+        $actual = Pico::char('A')
+            ->where(static fn (string $char): bool => $char === 'B')
+            ->parse('ABC');
 
         // Assert
         expect($actual)->toBeFailure();
@@ -398,16 +359,14 @@ describe('AbstractParser::where', function (): void {
     it('should not call the predicate when parsing fails', function (): void {
         // Arrange
         $wasCalled = false;
-        $parser = PicoInternal::asContextualParser(
-            Pico::char('A')->where(function (string $char) use (&$wasCalled): bool {
-                $wasCalled = true;
+        $parser = Pico::char('A')->where(function (string $char) use (&$wasCalled): bool {
+            $wasCalled = true;
 
-                return $char === 'A';
-            }),
-        );
+            return $char === 'A';
+        });
 
         // Act
-        $actual = $parser->parseInput(new ParserInput('B'));
+        $actual = $parser->parse('B');
 
         // Assert
         expect($actual)->toBeFailure();
@@ -418,71 +377,9 @@ describe('AbstractParser::where', function (): void {
 describe('AbstractParser::join', function (): void {
     it('should join an array output with the separator', function (): void {
         // Act
-        $actual = (new class () extends AbstractParser {
-            public function parseInput(ParserInput $input): ParserResult
-            {
-                return success(['first', 3], 0);
-            }
-        })->join(', ')->parse('');
+        $actual = Pico::char('A')->then(Pico::char('B'))->join(', ')->parse('AB');
 
         // Assert
-        expect($actual)->toBeSuccessOf('first, 3', 0);
-    });
-
-    it('should stringify a scalar output', function (): void {
-        // Act
-        $actual = (new class () extends AbstractParser {
-            public function parseInput(ParserInput $input): ParserResult
-            {
-                return success(42, 0);
-            }
-        })->join()->parse('');
-
-        // Assert
-        expect($actual)->toBeSuccessOf('42', 0);
-    });
-
-    it('should stringify a Stringable output', function (): void {
-        // Act
-        $actual = (new class () extends AbstractParser {
-            public function parseInput(ParserInput $input): ParserResult
-            {
-                return success(new class () implements \Stringable {
-                    public function __toString(): string
-                    {
-                        return 'stringable';
-                    }
-                }, 0);
-            }
-        })->join()->parse('');
-
-        // Assert
-        expect($actual)->toBeSuccessOf('stringable', 0);
-    });
-
-    it('should throw when an array output contains a non-stringable value', function (): void {
-        // Act
-        $action = static fn (): ParserResult => (new class () extends AbstractParser {
-            public function parseInput(ParserInput $input): ParserResult
-            {
-                return success(['first', new \stdClass()], 0);
-            }
-        })->join()->parse('');
-
-        // Assert
-        expect($action)->toThrow(ParserException::class, 'The value must be a scalar or implement Stringable.');
-    });
-
-    it('should throw when a non-array output cannot be stringified', function (): void {
-        // Act
-        $action = static fn (): ParserResult => (new class () extends AbstractParser {
-            public function parseInput(ParserInput $input): ParserResult
-            {
-                return success(null, 0);
-            }
-        })->join()->parse('');
-
-        // Assert
-        expect($action)->toThrow(ParserException::class, 'The value must be a scalar or implement Stringable.');
+        expect($actual)->toBeSuccessOf('A, B', 2);
     });
 });

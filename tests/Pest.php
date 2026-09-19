@@ -1,7 +1,7 @@
 <?php
 
-use Pico\Failure;
-use Pico\Success;
+use Pico\Contracts\ParserResult;
+use Pest\Expectation;
 use Tests\TestCase;
 
 /*
@@ -29,16 +29,16 @@ use Tests\TestCase;
 */
 
 expect()->extend('toBeFailure', function () {
-    return $this->toBeInstanceOf(Failure::class);
+    return expect(parserResult($this)->isFailure())->toBeTrue();
 });
 expect()->extend('toBeSuccess', function () {
-    return $this->toBeInstanceOf(Success::class);
+    return expect(parserResult($this)->isSuccess())->toBeTrue();
 });
 expect()->extend('toBeSuccessOf', function (mixed $output, int $consumedLength) {
-    return $this
-        ->toBeInstanceOf(Success::class)
-        ->output()->toBe($output)
-        ->consumedLength()->toBe($consumedLength);
+    $result = parserResult($this);
+    return expect($result->isSuccess())->toBeTrue()
+        ->and($result->output())->toBe($output)
+        ->and($result->consumedLength())->toBe($consumedLength);
 });
 
 /*
@@ -51,3 +51,15 @@ expect()->extend('toBeSuccessOf', function (mixed $output, int $consumedLength) 
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
+
+/**
+ * @param Expectation<*> $expectation
+ * @return ParserResult<*>
+ */
+function parserResult(Expectation $expectation): ParserResult
+{
+    if (!$expectation->value instanceof ParserResult) {
+        throw new LogicException('The expectation value must implement ParserResult.');
+    }
+    return $expectation->value;
+}

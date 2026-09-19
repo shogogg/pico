@@ -9,7 +9,7 @@ use Pico\Success;
 use Pico\Exceptions\ParserException;
 
 describe('::of', function (): void {
-    it('should returns a new instance of Success', function (): void {
+    it('should return a Success instance', function (): void {
         $success = Success::of('value', 5);
         expect($success)->toBeInstanceOf(Success::class);
     });

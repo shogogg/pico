@@ -62,7 +62,20 @@ describe('RecursiveParser::parseInput', function (): void {
         $parser->parseInput(new ParserInput('x'));
     })->throws(ParserException::class, 'The recursive parser definition can only be initialized once.');
 
-    it('should not reevaluate a failed definition', function (): void {
+    it('should propagate an exception thrown while evaluating the definition', function (): void {
+        // Arrange
+        $parser = new RecursiveParser(static function (Parser $self): Parser {
+            throw new \LogicException('Definition failed.');
+        });
+
+        // Act
+        $action = static fn () => $parser->parseInput(new ParserInput('x'));
+
+        // Assert
+        expect($action)->toThrow(\LogicException::class, 'Definition failed.');
+    });
+
+    it('should not reevaluate a definition after its evaluation fails', function (): void {
         // Arrange
         $calls = 0;
         $parser = new RecursiveParser(function (Parser $self) use (&$calls): Parser {
@@ -71,10 +84,17 @@ describe('RecursiveParser::parseInput', function (): void {
             throw new \LogicException('Definition failed.');
         });
 
-        // Act / Assert
-        expect(static fn () => $parser->parseInput(new ParserInput('x')))
-            ->toThrow(\LogicException::class, 'Definition failed.');
-        expect(static fn () => $parser->parseInput(new ParserInput('x')))
+        // Arrange the failed initialization state.
+        try {
+            $parser->parseInput(new ParserInput('x'));
+        } catch (\LogicException) {
+        }
+
+        // Act
+        $action = static fn () => $parser->parseInput(new ParserInput('x'));
+
+        // Assert
+        expect($action)
             ->toThrow(ParserException::class, 'The recursive parser definition can only be initialized once.');
         expect($calls)->toBe(1);
     });

@@ -10,7 +10,7 @@ declare(strict_types=1);
 use Pico\Failure;
 
 describe('::getInstance()', function (): void {
-    it('should return a new instance of Failure', function (): void {
+    it('should return a Failure instance', function (): void {
         $actual = Failure::getInstance();
         expect($actual)->toBeInstanceOf(Failure::class);
     });

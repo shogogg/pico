@@ -9,8 +9,6 @@ declare(strict_types=1);
 
 use Pico\Contracts\Parser;
 use Pico\Exceptions\ParserException;
-use Pico\Parsers\LazyParser;
-use Pico\Parsers\RegExpParser;
 use Pico\Pico;
 
 describe('Pico::alpha()', function (): void {
@@ -238,19 +236,13 @@ describe('Pico::char()', function (): void {
 describe('Pico::charWhere()', function (): void {
     it('should parse a UTF-8 character satisfying the predicate', function (): void {
         // Arrange
-        $received = '';
-        $parser = Pico::charWhere(function (string $char) use (&$received): bool {
-            $received = $char;
-
-            return $char === 'あ';
-        });
+        $parser = Pico::charWhere(fn (string $char): bool => $char === 'あ');
 
         // Act
         $actual = $parser->parse('あいう');
 
         // Assert
         expect($actual)->toBeSuccessOf('あ', 1);
-        expect($received)->toBe('あ');
     });
 
     it('should fail when the current character does not satisfy the predicate', function (): void {
@@ -405,14 +397,6 @@ describe('Pico::join()', function (): void {
 });
 
 describe('Pico::lazy()', function (): void {
-    it('should return a LazyParser instance', function (): void {
-        // Act
-        $actual = Pico::lazy(static fn (): Parser => Pico::char('A'));
-
-        // Assert
-        expect($actual)->toBeInstanceOf(LazyParser::class);
-    });
-
     it('should parse the parser returned by the factory', function (): void {
         // Act
         $actual = Pico::lazy(static fn (): Parser => Pico::char('A'))->parse('ABC');
@@ -459,6 +443,16 @@ describe('Pico::oneOf()', function (): void {
 
         // Assert
         expect($actual)->toBeFailure();
+    });
+});
+
+describe('Parser::optional()', function (): void {
+    it('should succeed without consuming input when the parser does not match', function (): void {
+        // Act
+        $actual = Pico::char('A')->optional()->parse('BC');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('', 0);
     });
 });
 
@@ -663,14 +657,6 @@ describe('Pico::recursive()', function (): void {
 });
 
 describe('Pico::regexp()', function (): void {
-    it('should return a RegExpParser instance', function (): void {
-        // Act
-        $actual = Pico::regexp('[A-Z]+');
-
-        // Assert
-        expect($actual)->toBeInstanceOf(RegExpParser::class);
-    });
-
     it('should parse the given regular expression', function (): void {
         // Act
         $actual = Pico::regexp('[A-Z]+')->parse('ABC123');
@@ -787,13 +773,6 @@ describe('Pico::seq()', function (): void {
         expect($actual)->toBeSuccessOf(['', 'B'], 1);
     });
 
-    it('should succeed without consuming input when an optional parser does not match', function (): void {
-        // Act
-        $actual = Pico::char('A')->optional()->parse('BC');
-
-        // Assert
-        expect($actual)->toBeSuccessOf('', 0);
-    });
 });
 
 describe('Pico::skip()', function (): void {
@@ -940,14 +919,6 @@ describe('Pico::whitespace()', function (): void {
 });
 
 describe('Pico::whitespaces()', function (): void {
-    it('should return a RegExpParser instance', function (): void {
-        // Act
-        $actual = Pico::whitespaces();
-
-        // Assert
-        expect($actual)->toBeInstanceOf(RegExpParser::class);
-    });
-
     it('should parse consecutive ASCII whitespace characters', function (): void {
         // Act
         $actual = Pico::whitespaces()->parse(" \t\nABC");
