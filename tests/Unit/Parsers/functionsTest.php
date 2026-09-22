@@ -13,7 +13,7 @@ use function Pico\Parsers\success;
 describe('Pico\\Parsers\\success()', function (): void {
     it('should return a Success instance with the supplied output and consumed length', function (): void {
         $actual = success('value', 5);
-        expect($actual)->toBeSuccessOf(
+        expect($actual)->toBeSuccessWith(
             output: 'value',
             consumedLength: 5,
         );

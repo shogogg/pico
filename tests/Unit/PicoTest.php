@@ -17,7 +17,7 @@ describe('Pico::alpha()', function (): void {
         $actual = Pico::alpha()->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, 1);
+        expect($actual)->toBeSuccessOf($expected);
     })->with([
         ['ABC', 'A'],
         ['xyz', 'x'],
@@ -42,7 +42,7 @@ describe('Pico::alphaNum()', function (): void {
         $actual = Pico::alphaNum()->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, 1);
+        expect($actual)->toBeSuccessOf($expected);
     })->with([
         ['ABC', 'A'],
         ['123', '1'],
@@ -68,7 +68,7 @@ describe('Pico::anyChar()', function (): void {
         $actual = Pico::anyChar()->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, 1);
+        expect($actual)->toBeSuccessOf($expected);
     })->with([
         ['ABC', 'A'],
         ['あいう', 'あ'],
@@ -90,7 +90,7 @@ describe('Pico::anyOf()', function (): void {
         $actual = Pico::anyOf(Pico::string('AB'), Pico::char('A'))->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('AB', 2);
+        expect($actual)->toBeSuccessWith('AB', 2);
     });
 
     it('should try the next parser after a failure', function (): void {
@@ -98,7 +98,7 @@ describe('Pico::anyOf()', function (): void {
         $actual = Pico::anyOf(Pico::char('Z'), Pico::char('A'))->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
     });
 
     it('should not evaluate parsers after a success', function (): void {
@@ -114,7 +114,7 @@ describe('Pico::anyOf()', function (): void {
         $actual = Pico::anyOf(Pico::char('A'), $second)->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
         expect($wasResolved)->toBeFalse();
     });
 
@@ -134,7 +134,7 @@ describe('Pico::ascii()', function (): void {
         $actual = Pico::ascii()->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
     });
 
     it('should fail for a non-ASCII character', function (string $input): void {
@@ -160,7 +160,7 @@ describe('Pico::between()', function (): void {
         )->parse('(foo)');
 
         // Assert
-        expect($actual)->toBeSuccessOf('foo', 5);
+        expect($actual)->toBeSuccessOf('foo');
     });
 
     it('should not require the content parser to consume input', function (): void {
@@ -172,7 +172,7 @@ describe('Pico::between()', function (): void {
         )->parse('()');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 2);
+        expect($actual)->toBeSuccessWith('', 2);
     });
 
     it('should fail when a delimiter or content parser fails', function (string $input): void {
@@ -198,7 +198,7 @@ describe('Pico::char()', function (): void {
         $actual = Pico::char('A')->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
     });
 
     it('should parse a multibyte character', function (): void {
@@ -206,7 +206,7 @@ describe('Pico::char()', function (): void {
         $actual = Pico::char('😀')->parse('😀ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('😀', 1);
+        expect($actual)->toBeSuccessOf('😀');
     });
 
     it('should fail when the current character does not match', function (): void {
@@ -242,7 +242,7 @@ describe('Pico::charWhere()', function (): void {
         $actual = $parser->parse('あいう');
 
         // Assert
-        expect($actual)->toBeSuccessOf('あ', 1);
+        expect($actual)->toBeSuccessOf('あ');
     });
 
     it('should fail when the current character does not satisfy the predicate', function (): void {
@@ -283,7 +283,7 @@ describe('Pico::concat()', function (): void {
         $actual = Pico::concat(Pico::char('A'), Pico::string('BC'), Pico::char('D'))->parse('ABCD!');
 
         // Assert
-        expect($actual)->toBeSuccessOf('ABCD', 4);
+        expect($actual)->toBeSuccessOf('ABCD');
     });
 
     it('should recursively concatenate nested parser outputs', function (): void {
@@ -295,7 +295,7 @@ describe('Pico::concat()', function (): void {
         )->parse('ABCDEF!');
 
         // Assert
-        expect($actual)->toBeSuccessOf('ABCDEF', 6);
+        expect($actual)->toBeSuccessOf('ABCDEF');
     });
 
     it('should stop evaluating parsers after a failure', function (): void {
@@ -320,7 +320,7 @@ describe('Pico::concat()', function (): void {
         $actual = Pico::concat()->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 0);
+        expect($actual)->toBeSuccessOf('');
     });
 });
 
@@ -330,7 +330,7 @@ describe('Pico::digit()', function (): void {
         $actual = Pico::digit()->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, 1);
+        expect($actual)->toBeSuccessOf($expected);
     })->with([
         ['012', '0'],
         ['987', '9'],
@@ -354,7 +354,7 @@ describe('Pico::eof()', function (): void {
         $actual = Pico::eof()->parse('');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 0);
+        expect($actual)->toBeSuccessWith('', 0);
     });
 
     it('should fail before the end of input', function (): void {
@@ -376,7 +376,7 @@ describe('Pico::join()', function (): void {
         )->parse('ABCD!');
 
         // Assert
-        expect($actual)->toBeSuccessOf('ABCD', 4);
+        expect($actual)->toBeSuccessWith('ABCD', 4);
     });
 
     it('should fail when a parser in the sequence fails', function (): void {
@@ -392,7 +392,7 @@ describe('Pico::join()', function (): void {
         $actual = Pico::join()->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 0);
+        expect($actual)->toBeSuccessOf('');
     });
 });
 
@@ -402,7 +402,7 @@ describe('Pico::lazy()', function (): void {
         $actual = Pico::lazy(static fn (): Parser => Pico::char('A'))->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
     });
 });
 
@@ -427,7 +427,7 @@ describe('Pico::oneOf()', function (): void {
         $actual = Pico::oneOf($characters)->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, 1);
+        expect($actual)->toBeSuccessOf($expected);
     })->with([
         'ASCII character' => ['ABC', 'BCD', 'B'],
         'multibyte character' => ['あいう', 'いえお', 'い'],
@@ -456,7 +456,7 @@ describe('Parser::optional()', function (): void {
         $actual = Pico::char('A')->optional()->parse('BC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 0);
+        expect($actual)->toBeSuccessWith('', 0);
     });
 });
 
@@ -466,7 +466,7 @@ describe('Pico::pair()', function (): void {
         $actual = Pico::pair(Pico::string('AB'), Pico::char('C'))->parse('ABCD');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['AB', 'C'], 3);
+        expect($actual)->toBeSuccessOf(['AB', 'C']);
     });
 
     it('should discard a named separator while preserving the outputs and consumed length', function (): void {
@@ -478,7 +478,7 @@ describe('Pico::pair()', function (): void {
         )->parse('key:value');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['key', 'value'], 9);
+        expect($actual)->toBeSuccessWith(['key', 'value'], 9);
     });
 
     it('should not evaluate the right parser when the separator fails', function (): void {
@@ -513,7 +513,7 @@ describe('Pico::triple()', function (): void {
         $actual = Pico::triple(Pico::char('A'), Pico::string('BC'), Pico::char('D'))->parse('ABCD!');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['A', 'BC', 'D'], 4);
+        expect($actual)->toBeSuccessWith(['A', 'BC', 'D'], 4);
     });
 
     it('should not evaluate later parsers when the first parser fails', function (): void {
@@ -572,7 +572,7 @@ describe('Pico::range()', function (): void {
         $actual = Pico::range('あ', 'お')->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, 1);
+        expect($actual)->toBeSuccessOf($expected);
     })->with([
         'range start' => ['あいう', 'あ'],
         'range middle' => ['えお', 'え'],
@@ -584,7 +584,7 @@ describe('Pico::range()', function (): void {
         $actual = Pico::range('😀', '😂')->parse('😁!');
 
         // Assert
-        expect($actual)->toBeSuccessOf('😁', 1);
+        expect($actual)->toBeSuccessOf('😁');
     });
 
     it('should fail for a character outside the range', function (string $input): void {
@@ -655,7 +655,7 @@ describe('Pico::recursive()', function (): void {
         $actual = $parser->parse('((x))');
 
         // Assert
-        expect($actual)->toBeSuccessOf('x', 5);
+        expect($actual)->toBeSuccessOf('x');
     });
 
 });
@@ -666,7 +666,7 @@ describe('Pico::regexp()', function (): void {
         $actual = Pico::regexp('[A-Z]+')->parse('ABC123');
 
         // Assert
-        expect($actual)->toBeSuccessOf('ABC', 3);
+        expect($actual)->toBeSuccessOf('ABC');
     });
 });
 
@@ -676,7 +676,7 @@ describe('Pico::sepBy()', function (): void {
         $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','))->parse('1,22,333x');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['1', '22', '333'], 8);
+        expect($actual)->toBeSuccessOf(['1', '22', '333']);
     });
 
     it('should succeed with no outputs when the first content parser fails and the minimum is zero', function (): void {
@@ -684,7 +684,7 @@ describe('Pico::sepBy()', function (): void {
         $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','))->parse('abc');
 
         // Assert
-        expect($actual)->toBeSuccessOf([], 0);
+        expect($actual)->toBeSuccessOf([]);
     });
 
     it('should fail when fewer than the minimum item count matches', function (): void {
@@ -708,7 +708,7 @@ describe('Pico::sepBy()', function (): void {
         $actual = Pico::sepBy(Pico::regexp('\\d+'), Pico::char(','))->parse('1,');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['1'], 1);
+        expect($actual)->toBeSuccessWith(['1'], 1);
     });
 
     it('should continue when an optional content parser consumes no input', function (): void {
@@ -716,7 +716,7 @@ describe('Pico::sepBy()', function (): void {
         $actual = Pico::sepBy(Pico::char('A')->optional(), Pico::char(','))->parse(',x');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['', ''], 1);
+        expect($actual)->toBeSuccessWith(['', ''], 1);
     });
 
     it('should continue when an optional separator parser consumes no input', function (): void {
@@ -724,7 +724,7 @@ describe('Pico::sepBy()', function (): void {
         $actual = Pico::sepBy(Pico::char('A'), Pico::char(',')->optional())->parse('AAA');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['A', 'A', 'A'], 3);
+        expect($actual)->toBeSuccessWith(['A', 'A', 'A'], 3);
     });
 
     it('should stop when neither optional parser consumes input', function (): void {
@@ -732,7 +732,7 @@ describe('Pico::sepBy()', function (): void {
         $actual = Pico::sepBy(Pico::char('A')->optional(), Pico::char(',')->optional())->parse('anything');
 
         // Assert
-        expect($actual)->toBeSuccessOf([''], 0);
+        expect($actual)->toBeSuccessWith([''], 0);
     });
 });
 
@@ -742,7 +742,7 @@ describe('Pico::seq()', function (): void {
         $actual = Pico::seq(Pico::char('A'), Pico::digit())->parse('A123');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['A', '1'], 2);
+        expect($actual)->toBeSuccessOf(['A', '1']);
     });
 
     it('should preserve outputs of different types in their original order', function (): void {
@@ -754,7 +754,7 @@ describe('Pico::seq()', function (): void {
         )->parse('A1!');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['A', 1, true], 3);
+        expect($actual)->toBeSuccessOf(['A', 1, true]);
     });
 
     it('should fail when a parser in the sequence fails', function (string $input): void {
@@ -774,7 +774,7 @@ describe('Pico::seq()', function (): void {
         $actual = Pico::seq(Pico::char('A')->optional(), Pico::char('B'))->parse('B');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['', 'B'], 1);
+        expect($actual)->toBeSuccessOf(['', 'B']);
     });
 
 });
@@ -785,7 +785,7 @@ describe('Pico::skip()', function (): void {
         $actual = Pico::skip(Pico::char('A'), Pico::string('BC'))->parse('ABCD');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 3);
+        expect($actual)->toBeSuccessWith('', 3);
     });
 
     it('should fail when a parser in the sequence fails', function (): void {
@@ -801,7 +801,7 @@ describe('Pico::skip()', function (): void {
         $actual = Pico::skip()->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 0);
+        expect($actual)->toBeSuccessWith('', 0);
     });
 });
 
@@ -811,7 +811,7 @@ describe('Pico::skipLeft()', function (): void {
         $actual = Pico::skipLeft(Pico::char(':'), Pico::char('A'))->parse(':ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 2);
+        expect($actual)->toBeSuccessWith('A', 2);
     });
 
     it('should fail when the left parser fails', function (): void {
@@ -837,7 +837,7 @@ describe('Pico::skipRight()', function (): void {
         $actual = Pico::skipRight(Pico::char('A'), Pico::char(';'))->parse('A;');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 2);
+        expect($actual)->toBeSuccessWith('A', 2);
     });
 
     it('should fail when the left parser fails', function (): void {
@@ -858,15 +858,15 @@ describe('Pico::skipRight()', function (): void {
 });
 
 describe('Pico::string()', function (): void {
-    it('should parse the given string', function (string $expected, string $input, int $consumedLength): void {
+    it('should parse the given string', function (string $expected, string $input): void {
         // Act
         $actual = Pico::string($expected)->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, $consumedLength);
+        expect($actual)->toBeSuccessOf($expected);
     })->with([
-        ['abc', 'abcdef', 3],
-        ['あい', 'あいう', 2],
+        ['abc', 'abcdef'],
+        ['あい', 'あいう'],
     ]);
 
     it('should reject an invalid UTF-8 expected string', function (string $expected): void {
@@ -903,7 +903,7 @@ describe('Pico::whitespace()', function (): void {
         $actual = Pico::whitespace()->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, 1);
+        expect($actual)->toBeSuccessOf($expected);
     })->with([
         [' ABC', ' '],
         ["\tABC", "\t"],
@@ -928,7 +928,7 @@ describe('Pico::whitespaces()', function (): void {
         $actual = Pico::whitespaces()->parse(" \t\nABC");
 
         // Assert
-        expect($actual)->toBeSuccessOf(" \t\n", 3);
+        expect($actual)->toBeSuccessOf(" \t\n");
     });
 
     it('should fail when the input does not start with an ASCII whitespace character', function (string $input): void {

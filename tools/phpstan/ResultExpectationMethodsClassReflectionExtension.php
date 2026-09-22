@@ -28,6 +28,7 @@ final readonly class ResultExpectationMethodsClassReflectionExtension implements
         'toBeFailure',
         'toBeSuccess',
         'toBeSuccessOf',
+        'toBeSuccessWith',
     ];
 
     public function __construct(

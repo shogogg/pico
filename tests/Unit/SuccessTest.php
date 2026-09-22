@@ -52,7 +52,7 @@ describe('->concat()', function (): void {
         }], 5)->concat();
 
         // Assert
-        expect($actual)->toBeSuccessOf('one-2!', 5);
+        expect($actual)->toBeSuccessWith('one-2!', 5);
     });
 
     it('should throw when a nested array contains a non-stringable value', function (): void {
@@ -82,7 +82,7 @@ describe('->map()', function (): void {
         $actual = Success::of('abc', 5)->map(static fn (string $output): int => strlen($output));
 
         // Assert
-        expect($actual)->toBeSuccessOf(3, 5);
+        expect($actual)->toBeSuccessWith(3, 5);
     });
 });
 
@@ -92,7 +92,7 @@ describe('->join()', function (): void {
         $actual = Success::of(['first', 3], 5)->join(', ');
 
         // Assert
-        expect($actual)->toBeSuccessOf('first, 3', 5);
+        expect($actual)->toBeSuccessWith('first, 3', 5);
     });
 
     it('should stringify a scalar output', function (): void {
@@ -100,7 +100,7 @@ describe('->join()', function (): void {
         $actual = Success::of(42, 5)->join();
 
         // Assert
-        expect($actual)->toBeSuccessOf('42', 5);
+        expect($actual)->toBeSuccessOf('42');
     });
 
     it('should stringify a Stringable output', function (): void {
@@ -113,7 +113,7 @@ describe('->join()', function (): void {
         }, 5)->join();
 
         // Assert
-        expect($actual)->toBeSuccessOf('stringable', 5);
+        expect($actual)->toBeSuccessOf('stringable');
     });
 
     it('should throw when an array output contains a non-stringable value', function (): void {

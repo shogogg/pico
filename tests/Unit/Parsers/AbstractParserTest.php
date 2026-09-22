@@ -30,7 +30,7 @@ describe('AbstractParser::parse', function (): void {
         $actual = $parser->parse('😀b');
 
         // Assert
-        expect($actual)->toBeSuccessOf('😀', 1);
+        expect($actual)->toBeSuccessOf('😀');
     });
 
     it('should propagate a ParserInput exception', function (): void {
@@ -56,7 +56,7 @@ describe('AbstractParser::complete', function (): void {
         $actual = Pico::char('A')->complete()->parse('A');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessWith('A', 1);
     });
 
     it('should fail when input remains after parsing', function (): void {
@@ -72,7 +72,7 @@ describe('AbstractParser::complete', function (): void {
         $actual = Pico::char('あ')->complete()->parse('あ');
 
         // Assert
-        expect($actual)->toBeSuccessOf('あ', 1);
+        expect($actual)->toBeSuccessWith('あ', 1);
     });
 });
 
@@ -85,7 +85,7 @@ describe('AbstractParser::concat', function (): void {
             ->parse('ABCD');
 
         // Assert
-        expect($actual)->toBeSuccessOf('ABC', 3);
+        expect($actual)->toBeSuccessWith('ABC', 3);
     });
 
     it('should return a failure when parsing fails', function (): void {
@@ -113,7 +113,7 @@ describe('AbstractParser::except', function (): void {
         $actual = Pico::char('a')->except(Pico::char('b'))->parse('apple');
 
         // Assert
-        expect($actual)->toBeSuccessOf('a', 1);
+        expect($actual)->toBeSuccessOf('a');
     });
 
     it('should return the parser failure when the exclusion parser fails', function (): void {
@@ -150,7 +150,7 @@ describe('AbstractParser::repeat', function (): void {
         $actual = Pico::char('A')->repeat()->parse('AAAB');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['A', 'A', 'A'], 3);
+        expect($actual)->toBeSuccessOf(['A', 'A', 'A']);
     });
 
     it('should stop after the maximum repetition count', function (): void {
@@ -158,7 +158,7 @@ describe('AbstractParser::repeat', function (): void {
         $actual = Pico::char('A')->repeat(max: 2)->parse('AAA');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['A', 'A'], 2);
+        expect($actual)->toBeSuccessOf(['A', 'A']);
     });
 
     it('should succeed with no results when the first match fails and the minimum is zero', function (): void {
@@ -166,7 +166,7 @@ describe('AbstractParser::repeat', function (): void {
         $actual = Pico::char('A')->repeat()->parse('BBB');
 
         // Assert
-        expect($actual)->toBeSuccessOf([], 0);
+        expect($actual)->toBeSuccessOf([]);
     });
 
     it('should fail when fewer than the minimum repetitions match', function (): void {
@@ -182,7 +182,7 @@ describe('AbstractParser::repeat', function (): void {
         $actual = Pico::char('A')->optional()->repeat(max: 2)->parse('BBB');
 
         // Assert
-        expect($actual)->toBeSuccessOf([], 0);
+        expect($actual)->toBeSuccessWith([], 0);
     });
 });
 
@@ -194,7 +194,7 @@ describe('AbstractParser::map', function (): void {
             ->parse('abc');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
     });
 
     it('should not transform a failed output', function (): void {
@@ -220,7 +220,7 @@ describe('AbstractParser::optional', function (): void {
         $actual = Pico::char('A')->optional()->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
     });
 
     it('should return a successful empty-string result without consuming input when parsing fails', function (): void {
@@ -228,7 +228,7 @@ describe('AbstractParser::optional', function (): void {
         $actual = Pico::char('A')->optional()->parse('BBB');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 0);
+        expect($actual)->toBeSuccessWith('', 0);
     });
 });
 
@@ -245,7 +245,7 @@ describe('AbstractParser::orElse', function (): void {
         })->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
         expect($wasCalled)->toBeFalse();
     });
 
@@ -254,7 +254,7 @@ describe('AbstractParser::orElse', function (): void {
         $actual = Pico::char('A')->orElse(static fn (): string => 'fallback')->parse('BBB');
 
         // Assert
-        expect($actual)->toBeSuccessOf('fallback', 0);
+        expect($actual)->toBeSuccessWith('fallback', 0);
     });
 
     it('should propagate a fallback exception', function (): void {
@@ -274,7 +274,7 @@ describe('AbstractParser::skip', function (): void {
         $actual = Pico::char('A')->skip()->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('', 1);
+        expect($actual)->toBeSuccessWith('', 1);
     });
 
     it('should return a failure when parsing fails', function (): void {
@@ -292,7 +292,7 @@ describe('AbstractParser::then', function (): void {
         $actual = Pico::char('A')->then(Pico::char('B'))->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf(['A', 'B'], 2);
+        expect($actual)->toBeSuccessWith(['A', 'B'], 2);
     });
 
     it('should not evaluate the right parser when the left parser fails', function (): void {
@@ -333,7 +333,7 @@ describe('AbstractParser::where', function (): void {
             ->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
     });
 
     it('should preserve the consumed length when the predicate succeeds', function (): void {
@@ -343,7 +343,7 @@ describe('AbstractParser::where', function (): void {
             ->parse('ABC');
 
         // Assert
-        expect($actual)->toBeSuccessOf('AB', 2);
+        expect($actual)->toBeSuccessWith('AB', 2);
     });
 
     it('should return a failure when the predicate fails', function (): void {
@@ -380,6 +380,6 @@ describe('AbstractParser::join', function (): void {
         $actual = Pico::char('A')->then(Pico::char('B'))->join(', ')->parse('AB');
 
         // Assert
-        expect($actual)->toBeSuccessOf('A, B', 2);
+        expect($actual)->toBeSuccessOf('A, B');
     });
 });

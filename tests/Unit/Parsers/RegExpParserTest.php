@@ -22,7 +22,7 @@ describe('RegExpParser::parseInput', function (): void {
         $actual = new RegExpParser('[A-Z]+')->parseInput($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf('ABC', 3);
+        expect($actual)->toBeSuccessOf('ABC');
     });
 
     it('should preserve Unicode character lengths', function (): void {
@@ -30,7 +30,7 @@ describe('RegExpParser::parseInput', function (): void {
         $actual = new RegExpParser('[あ-お]+')->parseInput(ParserInput::of('あいうえお'));
 
         // Assert
-        expect($actual)->toBeSuccessOf('あいうえお', 5);
+        expect($actual)->toBeSuccessWith('あいうえお', 5);
     });
 
     it('should fail when the pattern does not match at the current input offset', function (): void {

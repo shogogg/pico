@@ -29,7 +29,7 @@ describe('RecursiveParser::parseInput', function (): void {
         $actual = $parser->parseInput(ParserInput::of('((x))'));
 
         // Assert
-        expect($actual)->toBeSuccessOf('x', 5);
+        expect($actual)->toBeSuccessOf('x');
     });
 
     it('should evaluate the definition only once', function (): void {

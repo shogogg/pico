@@ -34,7 +34,22 @@ expect()->extend('toBeFailure', function () {
 expect()->extend('toBeSuccess', function () {
     return expect(parserResult($this)->isSuccess())->toBeTrue();
 });
-expect()->extend('toBeSuccessOf', function (mixed $output, int $consumedLength) {
+/**
+ * @template T
+ * @param T $output
+ */
+expect()->extend('toBeSuccessOf', function ($output) {
+    $result = parserResult($this);
+    return expect($result->isSuccess())
+        ->toBeTrue()
+        ->and($result->output())
+        ->toBe($output);
+});
+/**
+ * @template T
+ * @param T $output
+ */
+expect()->extend('toBeSuccessWith', function ($output, int $consumedLength) {
     $result = parserResult($this);
     return expect($result->isSuccess())->toBeTrue()
         ->and($result->output())->toBe($output)

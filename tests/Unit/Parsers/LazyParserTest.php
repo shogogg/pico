@@ -21,7 +21,7 @@ describe('LazyParser::parseInput', function (): void {
             ->parseInput(ParserInput::of('ABC'));
 
         // Assert
-        expect($actual)->toBeSuccessOf('A', 1);
+        expect($actual)->toBeSuccessOf('A');
     });
 
     it('should not evaluate the factory until parsing starts', function (): void {

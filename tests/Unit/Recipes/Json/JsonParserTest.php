@@ -17,7 +17,7 @@ describe('JsonParser::document', function (): void {
         $actual = JsonParser::document()->parse($input);
 
         // Assert
-        expect($actual)->toBeSuccessOf($expected, mb_strlen($input));
+        expect($actual)->toBeSuccessWith($expected, mb_strlen($input));
     })->with([
         'null' => ['null', null],
         'boolean literals' => ['[true, false]', [true, false]],

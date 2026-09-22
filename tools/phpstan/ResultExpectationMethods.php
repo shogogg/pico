@@ -37,7 +37,16 @@ interface ResultExpectationMethods
     public function toBeSuccess(): Expectation;
 
     /**
-     * @return Expectation<mixed>
+     * @template T
+     * @param T $output
+     * @return Expectation<T>
      */
-    public function toBeSuccessOf(mixed $output, int $consumedLength): Expectation;
+    public function toBeSuccessOf($output): Expectation;
+
+    /**
+     * @template T
+     * @param T $output
+     * @return Expectation<T>
+     */
+    public function toBeSuccessWith($output, int $consumedLength): Expectation;
 }
