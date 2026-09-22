@@ -158,11 +158,7 @@ final class Parsers
         if ($characters === '') {
             return self::failure();
         }
-        if (!mb_check_encoding($characters, 'UTF-8')) {
-            throw new ParserException('The character set must be valid UTF-8.');
-        }
-
-        $characterSet = array_fill_keys(mb_str_split($characters, 1, 'UTF-8'), true);
+        $characterSet = self::characterSet($characters);
         return self::charWhere(static fn (string $x): bool => isset($characterSet[$x]));
     }
 
@@ -240,6 +236,19 @@ final class Parsers
             'whitespaces',
             static fn (): ContextualParser => self::regexp("[ \t\r\n\f\v]+"),
         );
+    }
+
+    /**
+     * Creates a lookup set for oneOf() membership checks.
+     *
+     * @return array<string, true>
+     */
+    private static function characterSet(string $characters): array
+    {
+        if (!mb_check_encoding($characters, 'UTF-8')) {
+            throw new ParserException('The character set must be valid UTF-8.');
+        }
+        return array_fill_keys(mb_str_split($characters, 1, 'UTF-8'), true);
     }
 
     /** @return ContextualParser<never> */
