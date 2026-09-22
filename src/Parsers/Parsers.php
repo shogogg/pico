@@ -15,7 +15,11 @@ use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
 use Pico\Internal\PicoInternal;
 
-/** @internal */
+/**
+ * Creates the primitive parsers used by the Pico facade.
+ *
+ * @internal
+ */
 final class Parsers
 {
     /**
@@ -151,11 +155,11 @@ final class Parsers
     /** @return ContextualParser<string> */
     public static function oneOf(string $characters): ContextualParser
     {
+        if ($characters === '') {
+            return self::failure();
+        }
         if (!mb_check_encoding($characters, 'UTF-8')) {
             throw new ParserException('The character set must be valid UTF-8.');
-        }
-        if (mb_strlen($characters) === 0) {
-            throw new ParserException('The character set must not be empty.');
         }
 
         $characterSet = array_fill_keys(mb_str_split($characters, 1, 'UTF-8'), true);

@@ -177,7 +177,7 @@ final class Pico
      * Creates a parser that matches a character from the given UTF-8 character set.
      *
      * @return Parser<string>
-     * @throws ParserException When the character set is empty or invalid UTF-8.
+     * @throws ParserException When the character set is invalid UTF-8.
      */
     public static function oneOf(string $characters): Parser
     {

@@ -414,9 +414,13 @@ describe('Pico::oneOf()', function (): void {
         'incomplete multibyte character' => "\xE3\x81",
     ])->throws(ParserException::class, 'The character set must be valid UTF-8.');
 
-    it('should reject an empty character set', function (): void {
-        Pico::oneOf('');
-    })->throws(ParserException::class, 'The character set must not be empty.');
+    it('should fail for an empty character set', function (): void {
+        // Act
+        $actual = Pico::oneOf('')->parse('ABC');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
 
     it('should parse a character in the given character set', function (string $characters, string $input, string $expected): void {
         // Act

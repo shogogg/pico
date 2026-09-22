@@ -14,7 +14,11 @@ use Pico\Contracts\ParserResult;
 use Pico\Exceptions\ParserException;
 use Pico\Internal\PicoInternal;
 
-/** @internal */
+/**
+ * Creates parser combinators used by the Pico facade.
+ *
+ * @internal
+ */
 final class Combinators
 {
     private function __construct()
