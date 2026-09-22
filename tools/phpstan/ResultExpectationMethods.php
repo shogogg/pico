@@ -41,6 +41,13 @@ interface ResultExpectationMethods
      * @param T $output
      * @return Expectation<T>
      */
+    public function toBeSuccessEqualTo($output): Expectation;
+
+    /**
+     * @template T
+     * @param T $output
+     * @return Expectation<T>
+     */
     public function toBeSuccessOf($output): Expectation;
 
     /**

@@ -38,6 +38,17 @@ expect()->extend('toBeSuccess', function () {
  * @template T
  * @param T $output
  */
+expect()->extend('toBeSuccessEqualTo', function ($output) {
+    $result = parserResult($this);
+    return expect($result->isSuccess())
+        ->toBeTrue()
+        ->and($result->output())
+        ->toEqual($output);
+});
+/**
+ * @template T
+ * @param T $output
+ */
 expect()->extend('toBeSuccessOf', function ($output) {
     $result = parserResult($this);
     return expect($result->isSuccess())

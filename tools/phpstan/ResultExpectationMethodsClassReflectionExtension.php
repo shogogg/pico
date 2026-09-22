@@ -27,6 +27,7 @@ final readonly class ResultExpectationMethodsClassReflectionExtension implements
         'output',
         'toBeFailure',
         'toBeSuccess',
+        'toBeSuccessEqualTo',
         'toBeSuccessOf',
         'toBeSuccessWith',
     ];
