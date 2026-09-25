@@ -56,13 +56,14 @@ final class JsonSyntaxSimplified
         return self::memoize('value', static fn (): Parser => Pico::between(
             self::whitespace(),
             Pico::anyOf(
-                Pico::string('null')->map(static fn (): null => null),
-                self::boolean(),
-                self::number(),
                 self::string(),
+                self::number(),
                 // Arrays and objects require lazy() wrappers to handle recursive referencing.
                 Pico::lazy(static fn (): Parser => self::array()),
                 Pico::lazy(static fn (): Parser => self::object()),
+                Pico::string('true')->map(static fn (): true => true),
+                Pico::string('false')->map(static fn (): false => false),
+                Pico::string('null')->map(static fn (): null => null),
             ),
             self::whitespace(),
         ));
@@ -83,19 +84,6 @@ final class JsonSyntaxSimplified
         }
 
         return self::$parsers[$key];
-    }
-
-    /**
-     * JSON boolean parser.
-     *
-     * @return Parser<bool>
-     */
-    private static function boolean(): Parser
-    {
-        return self::memoize('boolean', static fn (): Parser => Pico::anyOf(
-            Pico::string('true')->map(static fn (): bool => true),
-            Pico::string('false')->map(static fn (): bool => false),
-        ));
     }
 
     /**
