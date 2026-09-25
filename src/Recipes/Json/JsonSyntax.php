@@ -199,9 +199,19 @@ final class JsonSyntax
      */
     private static function array(): Parser
     {
+        $emptyArray = Pico::seq(
+            Pico::char('['),
+            self::whitespace(),
+            Pico::char(']'),
+        );
+        $nonEmptyArray = Pico::between(
+            Pico::char('['),
+            Pico::sepBy(self::value(), Pico::char(',')),
+            Pico::char(']'),
+        );
         return Pico::anyOf(
-            Pico::seq(Pico::char('['), self::whitespace(), Pico::char(']'))->map(static fn (): array => []),
-            Pico::between(Pico::char('['), Pico::sepBy(self::value(), Pico::char(',')), Pico::char(']')),
+            $emptyArray->map(static fn (): array => []),
+            $nonEmptyArray,
         );
     }
 
@@ -213,7 +223,6 @@ final class JsonSyntax
     private static function object(): Parser
     {
         $whitespace = self::whitespace();
-
         $objectMember = Pico::pair(
             Pico::between($whitespace, self::string(), $whitespace),
             self::value(),
@@ -221,14 +230,17 @@ final class JsonSyntax
         )->map(
             static fn (array $outputs): array => [$outputs[0] => $outputs[1]],
         );
-
-        $objectContent = Pico::sepBy($objectMember, Pico::char(','))->map(
-            static fn (array $members): array => array_merge([], ...$members),
+        $emptyObject = Pico::seq(Pico::char('{'), $whitespace, Pico::char('}'));
+        $nonEmptyObject = Pico::between(
+            Pico::char('{'),
+            Pico::sepBy($objectMember, Pico::char(','))->map(
+                static fn (array $members): array => array_merge([], ...$members),
+            ),
+            Pico::char('}'),
         );
-
         return Pico::anyOf(
-            Pico::seq(Pico::char('{'), $whitespace, Pico::char('}'))->map(static fn (): array => []),
-            Pico::between(Pico::char('{'), $objectContent, Pico::char('}')),
+            $emptyObject->map(static fn (): array => []),
+            $nonEmptyObject,
         );
     }
 
