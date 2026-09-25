@@ -103,3 +103,97 @@ describe('JsonParser::document', function (): void {
         expect($parse)->toThrow(\Pico\Exceptions\ParserException::class);
     });
 });
+
+describe('JsonParser::simplified', function (): void {
+    it('should parse an integer', function (string $input, int $expected): void {
+        // Act
+        $actual = JsonParser::simplified()->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessOf($expected);
+    })->with([
+        'zero' => ['0', 0],
+        'negative integer' => ['-12', -12],
+        'positive integer' => ['123', 123],
+    ]);
+
+    it('should parse string content', function (string $input, string $expected): void {
+        // Act
+        $actual = JsonParser::simplified()->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessOf($expected);
+    })->with([
+        'ordinary characters' => ['"Pico"', 'Pico'],
+        'a literal backslash' => ['"Pico\\Parser"', 'Pico\\Parser'],
+        'an escape-looking sequence' => ['"Pico\\n"', 'Pico\\n'],
+        'a Unicode escape-looking sequence' => ['"\\u3042"', '\\u3042'],
+    ]);
+
+    it('should parse an escaped double quote in a string', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('"Pico \\"Parser\\""');
+
+        // Assert
+        expect($actual)->toBeSuccessOf('Pico "Parser"');
+    });
+
+    it('should parse an array', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('[1, "Pico", true, null]');
+
+        // Assert
+        expect($actual)->toBeSuccessEqualTo([1, 'Pico', true, null]);
+    });
+
+    it('should parse an object', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('{"name": "Pico", "count": 1}');
+
+        // Assert
+        expect($actual)->toBeSuccessEqualTo(['name' => 'Pico', 'count' => 1]);
+    });
+
+    it('should parse JSON whitespace around a value', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse(" \t\r\n [ ] \n");
+
+        // Assert
+        expect($actual)->toBeSuccessOf([]);
+    });
+
+    it('should consume the complete simplified JSON text', function (): void {
+        // Arrange
+        $input = '123';
+
+        // Act
+        $actual = JsonParser::simplified()->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessWith(123, mb_strlen($input));
+    });
+
+    it('should reject an unsupported decimal number', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('3.14');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should reject an unsupported exponential number', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('1e3');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+
+    it('should reject trailing content', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('null true');
+
+        // Assert
+        expect($actual)->toBeFailure();
+    });
+});

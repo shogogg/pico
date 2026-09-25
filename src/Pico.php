@@ -239,12 +239,12 @@ final class Pico
      * @template TContent
      * @template TSeparator
      * @param Parser<TContent> $content
-     * @param Parser<TSeparator> $separator
+     * @param Parser<TSeparator> $sep
      * @return Parser<list<TContent>>
      */
-    public static function sepBy(Parser $content, Parser $separator, int $min = 0): Parser
+    public static function sepBy(Parser $content, Parser $sep, int $min = 0): Parser
     {
-        return Combinators::sepBy($content, $separator, $min);
+        return Combinators::sepBy($content, $sep, $min);
     }
 
     /**

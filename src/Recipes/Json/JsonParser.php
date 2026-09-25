@@ -16,6 +16,7 @@ use Pico\Pico;
  * RFC 8259 JSON parser recipe.
  *
  * @phpstan-import-type JsonValue from JsonSyntax
+ * @phpstan-import-type JsonValueSimplified from JsonSyntaxSimplified
  */
 final class JsonParser
 {
@@ -32,6 +33,27 @@ final class JsonParser
             JsonSyntax::value(),
             $whitespace,
         );
+        return $json->complete();
+    }
+
+    /**
+     * Creates a parser for a complete, deliberately simplified JSON text.
+     *
+     * Strings support only escaped double quotes, and numbers support only
+     * integer syntax. Arrays, objects, whitespace, booleans, and null retain
+     * their JSON structure for learning purposes.
+     *
+     * @return Parser<JsonValueSimplified>
+     */
+    public static function simplified(): Parser
+    {
+        $whitespace = JsonSyntaxSimplified::whitespace();
+        $json = Pico::between(
+            $whitespace,
+            JsonSyntaxSimplified::value(),
+            $whitespace,
+        );
+
         return $json->complete();
     }
 }
