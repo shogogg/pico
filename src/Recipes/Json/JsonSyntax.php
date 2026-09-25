@@ -30,19 +30,6 @@ final class JsonSyntax
     private static array $parsers = [];
 
     /**
-     * Whitespace parser.
-     *
-     * @return Parser<string>
-     */
-    public static function whitespace(): Parser
-    {
-        return self::memoize('whitespace', static function (): Parser {
-            // whitespace = 0x20, horizontal tab = 0x09, LF = 0x0A, CR = 0x0D
-            return Pico::oneOf("\x20\x09\x0A\x0D")->repeat()->skip();
-        });
-    }
-
-    /**
      * JSON value parser.
      *
      * @return Parser<JsonValue>
@@ -89,42 +76,40 @@ final class JsonSyntax
      */
     private static function number(): Parser
     {
-        return self::memoize('number', static function (): Parser {
-            // minus sign
-            $minus = Pico::char('-')->optional();
+        // minus sign
+        $minus = Pico::char('-')->optional();
 
-            // integer part
-            $integerPart = Pico::anyOf(
-                Pico::char('0'),
-                Pico::join(Pico::range('1', '9'), Pico::digit()->repeat()->join()),
-            );
+        // integer part
+        $integerPart = Pico::anyOf(
+            Pico::char('0'),
+            Pico::join(Pico::range('1', '9'), Pico::digit()->repeat()->join()),
+        );
 
-            // fraction part of float
-            $frac = Pico::join(Pico::char('.'), Pico::digit()->repeat(min: 1)->join());
+        // fraction part of float
+        $frac = Pico::join(Pico::char('.'), Pico::digit()->repeat(min: 1)->join());
 
-            // exponent part of float
-            $exp = Pico::join(
-                Pico::oneOf('eE'),
-                Pico::oneOf('+-')->optional(),
-                Pico::digit()->repeat(min: 1)->join(),
-            );
+        // exponent part of float
+        $exp = Pico::join(
+            Pico::oneOf('eE'),
+            Pico::oneOf('+-')->optional(),
+            Pico::digit()->repeat(min: 1)->join(),
+        );
 
-            // float
-            $float = Pico::anyOf(
-                Pico::join($minus, $integerPart, $frac, $exp->optional()),
-                Pico::join($minus, $integerPart, $exp),
-            );
+        // float
+        $float = Pico::anyOf(
+            Pico::join($minus, $integerPart, $frac, $exp->optional()),
+            Pico::join($minus, $integerPart, $exp),
+        );
 
-            // integer
-            $integer = Pico::join($minus, $integerPart);
+        // integer
+        $integer = Pico::join($minus, $integerPart);
 
-            // number = integer or float
-            // Parse a float first because an integer parser would consume its integer part.
-            return Pico::anyOf(
-                $float->map(self::decodeFloat(...)),
-                $integer->map(self::decodeInteger(...)),
-            );
-        });
+        // number = integer or float
+        // Parse a float first because an integer parser would consume its integer part.
+        return Pico::anyOf(
+            $float->map(self::decodeFloat(...)),
+            $integer->map(self::decodeInteger(...)),
+        );
     }
 
     /**
@@ -160,20 +145,6 @@ final class JsonSyntax
      * @return Parser<string>
      */
     private static function string(): Parser
-    {
-        return self::memoize('string', static fn (): Parser => Pico::between(
-            Pico::char('"'),
-            self::stringContent(),
-            Pico::char('"'),
-        ));
-    }
-
-    /**
-     * JSON string content parser.
-     *
-     * @return Parser<string>
-     */
-    private static function stringContent(): Parser
     {
         // unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
         //           = %x20-10FFFF except %x22 or %x5C
@@ -214,7 +185,11 @@ final class JsonSyntax
         $codeUnit = $notSurrogate->map(static fn (int $codeUnit): string => mb_chr($codeUnit, 'UTF-8'));
         $escaped = Pico::anyOf($simpleEscape, $surrogatePair, $codeUnit);
 
-        return Pico::anyOf($unescaped, $escaped)->repeat()->join();
+        return self::memoize('string', static fn (): Parser => Pico::between(
+            Pico::char('"'),
+            Pico::anyOf($unescaped, $escaped)->repeat()->join(),
+            Pico::char('"'),
+        ));
     }
 
     /**
@@ -255,5 +230,18 @@ final class JsonSyntax
             Pico::seq(Pico::char('{'), $whitespace, Pico::char('}'))->map(static fn (): array => []),
             Pico::between(Pico::char('{'), $objectContent, Pico::char('}')),
         );
+    }
+
+    /**
+     * Whitespace parser.
+     *
+     * @return Parser<string>
+     */
+    private static function whitespace(): Parser
+    {
+        return self::memoize('whitespace', static function (): Parser {
+            // whitespace = 0x20, horizontal tab = 0x09, LF = 0x0A, CR = 0x0D
+            return Pico::oneOf("\x20\x09\x0A\x0D")->repeat()->skip();
+        });
     }
 }

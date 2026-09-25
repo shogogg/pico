@@ -34,19 +34,6 @@ final class JsonSyntaxSimplified
     private static array $parsers = [];
 
     /**
-     * Whitespace parser.
-     *
-     * @return Parser<string>
-     */
-    public static function whitespace(): Parser
-    {
-        return self::memoize('whitespace', static function (): Parser {
-            // whitespace = 0x20, horizontal tab = 0x09, LF = 0x0A, CR = 0x0D
-            return Pico::oneOf("\x20\x09\x0A\x0D")->repeat()->skip();
-        });
-    }
-
-    /**
      * Simplified JSON value parser.
      *
      * @return Parser<JsonValueSimplified>
@@ -93,18 +80,16 @@ final class JsonSyntaxSimplified
      */
     private static function number(): Parser
     {
-        return self::memoize('number', static function (): Parser {
-            // minus sign
-            $minus = Pico::char('-')->optional();
+        // minus sign
+        $minus = Pico::char('-')->optional();
 
-            // integer part
-            $integerPart = Pico::anyOf(
-                Pico::char('0'),
-                Pico::join(Pico::range('1', '9'), Pico::digit()->repeat()->join()),
-            );
+        // integer part
+        $integerPart = Pico::anyOf(
+            Pico::char('0'),
+            Pico::join(Pico::range('1', '9'), Pico::digit()->repeat()->join()),
+        );
 
-            return Pico::join($minus, $integerPart)->map(intval(...));
-        });
+        return Pico::join($minus, $integerPart)->map(intval(...));
     }
 
     /**
@@ -164,5 +149,18 @@ final class JsonSyntaxSimplified
             Pico::seq(Pico::char('{'), $whitespace, Pico::char('}'))->map(static fn (): array => []),
             Pico::between(Pico::char('{'), $objectContent, Pico::char('}')),
         );
+    }
+
+    /**
+     * Whitespace parser.
+     *
+     * @return Parser<string>
+     */
+    private static function whitespace(): Parser
+    {
+        return self::memoize('whitespace', static function (): Parser {
+            // whitespace = 0x20, horizontal tab = 0x09, LF = 0x0A, CR = 0x0D
+            return Pico::oneOf("\x20\x09\x0A\x0D")->repeat()->skip();
+        });
     }
 }
