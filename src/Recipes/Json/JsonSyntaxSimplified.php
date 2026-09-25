@@ -166,7 +166,9 @@ final class JsonSyntaxSimplified
             self::string(),
             self::value(),
             sep: Pico::skip($whitespace, Pico::char(':'), $whitespace),
-        )->map(static fn (array $outputs): array => [$outputs[0] => $outputs[1]]);
+        )->map(
+            static fn (array $outputs): array => [$outputs[0] => $outputs[1]],
+        );
 
         return Pico::between(
             Pico::seq($whitespace, Pico::char('{'), $whitespace),

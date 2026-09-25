@@ -68,6 +68,22 @@ describe('JsonParser::document', function (): void {
         'whitespace around a value' => [" \t\r\n [ ] \n", []],
     ]);
 
+    it('should parse an empty array', function (): void {
+        // Act
+        $actual = JsonParser::document()->parse('[]');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([]);
+    });
+
+    it('should parse an empty object', function (): void {
+        // Act
+        $actual = JsonParser::document()->parse('{}');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([]);
+    });
+
     it('should reject non-strict JSON', function (string $input): void {
         // Act
         $actual = JsonParser::document()->parse($input);
@@ -146,12 +162,28 @@ describe('JsonParser::simplified', function (): void {
         expect($actual)->toBeSuccessEqualTo([1, 'Pico', true, null]);
     });
 
+    it('should parse an empty array', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('[]');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([]);
+    });
+
     it('should parse an object', function (): void {
         // Act
         $actual = JsonParser::simplified()->parse('{"name": "Pico", "count": 1}');
 
         // Assert
         expect($actual)->toBeSuccessEqualTo(['name' => 'Pico', 'count' => 1]);
+    });
+
+    it('should parse an empty object', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('{}');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([]);
     });
 
     it('should parse JSON whitespace around a value', function (): void {
