@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace Pico\Recipes\Json;
 
 use Pico\Contracts\Parser;
-use Pico\Pico;
 
 /**
  * RFC 8259 JSON parser recipe.
@@ -27,13 +26,7 @@ final class JsonParser
      */
     public static function document(): Parser
     {
-        $whitespace = JsonSyntax::whitespace();
-        $json = Pico::between(
-            $whitespace,
-            JsonSyntax::value(),
-            $whitespace,
-        );
-        return $json->complete();
+        return JsonSyntax::value()->complete();
     }
 
     /**
@@ -47,13 +40,6 @@ final class JsonParser
      */
     public static function simplified(): Parser
     {
-        $whitespace = JsonSyntaxSimplified::whitespace();
-        $json = Pico::between(
-            $whitespace,
-            JsonSyntaxSimplified::value(),
-            $whitespace,
-        );
-
-        return $json->complete();
+        return JsonSyntaxSimplified::value()->complete();
     }
 }

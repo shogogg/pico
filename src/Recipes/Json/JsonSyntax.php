@@ -49,14 +49,19 @@ final class JsonSyntax
      */
     public static function value(): Parser
     {
-        return self::memoize('value', static fn (): Parser => Pico::anyOf(
-            Pico::string('null')->map(static fn (): null => null),
-            self::boolean(),
-            self::number(),
-            self::string(),
-            // Arrays and objects require lazy() wrappers to handle recursive referencing.
-            Pico::lazy(static fn (): Parser => self::array()),
-            Pico::lazy(static fn (): Parser => self::object()),
+        $whitespace = self::whitespace();
+        return self::memoize('value', static fn (): Parser => Pico::between(
+            $whitespace,
+            Pico::anyOf(
+                Pico::string('null')->map(static fn (): null => null),
+                self::boolean(),
+                self::number(),
+                self::string(),
+                // Arrays and objects require lazy() wrappers to handle recursive referencing.
+                Pico::lazy(static fn (): Parser => self::array()),
+                Pico::lazy(static fn (): Parser => self::object()),
+            ),
+            $whitespace,
         ));
     }
 
@@ -231,14 +236,9 @@ final class JsonSyntax
      */
     private static function array(): Parser
     {
-        $value = self::value();
-        $whitespace = self::whitespace();
-        $arraySep = Pico::skip($whitespace, Pico::char(','), $whitespace);
-
-        return Pico::between(
-            Pico::seq($whitespace, Pico::char('['), $whitespace),
-            Pico::sepBy($value, $arraySep),
-            Pico::seq($whitespace, Pico::char(']'), $whitespace),
+        return Pico::anyOf(
+            Pico::seq(Pico::char('['), self::whitespace(), Pico::char(']'))->map(static fn (): array => []),
+            Pico::between(Pico::char('['), Pico::sepBy(self::value(), Pico::char(',')), Pico::char(']')),
         );
     }
 
@@ -249,27 +249,23 @@ final class JsonSyntax
      */
     private static function object(): Parser
     {
-        $value = self::value();
-        $string = self::string();
         $whitespace = self::whitespace();
-        $objectPairSep = Pico::skip($whitespace, Pico::char(':'), $whitespace);
-        $objectValueSep = Pico::skip($whitespace, Pico::char(','), $whitespace);
 
         $objectMember = Pico::pair(
-            $string,
-            $value,
-            sep: $objectPairSep,
-        )->map(static function (array $member): array {
-            [$key, $value] = $member;
-            return [$key => $value];
-        });
+            Pico::between($whitespace, self::string(), $whitespace),
+            self::value(),
+            sep: Pico::char(':'),
+        )->map(
+            static fn (array $outputs): array => [$outputs[0] => $outputs[1]],
+        );
 
-        return Pico::between(
-            Pico::skip($whitespace, Pico::char('{'), $whitespace),
-            Pico::sepBy($objectMember, $objectValueSep)->map(
-                static fn (array $members): array => array_merge([], ...$members),
-            ),
-            Pico::skip($whitespace, Pico::char('}'), $whitespace),
+        $objectContent = Pico::sepBy($objectMember, Pico::char(','))->map(
+            static fn (array $members): array => array_merge([], ...$members),
+        );
+
+        return Pico::anyOf(
+            Pico::seq(Pico::char('{'), $whitespace, Pico::char('}'))->map(static fn (): array => []),
+            Pico::between(Pico::char('{'), $objectContent, Pico::char('}')),
         );
     }
 }

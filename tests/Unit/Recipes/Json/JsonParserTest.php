@@ -65,7 +65,6 @@ describe('JsonParser::document', function (): void {
             '{"key": 1, "key": 2}',
             ['key' => 2],
         ],
-        'whitespace around a value' => [" \t\r\n [ ] \n", []],
     ]);
 
     it('should parse an empty array', function (): void {
@@ -83,6 +82,66 @@ describe('JsonParser::document', function (): void {
         // Assert
         expect($actual)->toBeSuccessOf([]);
     });
+
+    it('should parse whitespace in an empty array', function (): void {
+        // Act
+        $actual = JsonParser::document()->parse('[ ]');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([]);
+    });
+
+    it('should parse whitespace in an empty object', function (): void {
+        // Act
+        $actual = JsonParser::document()->parse('{ }');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([]);
+    });
+
+    it('should parse whitespace before the root value', function (): void {
+        // Act
+        $actual = JsonParser::document()->parse(" \t\r\nnull");
+
+        // Assert
+        expect($actual)->toBeSuccessOf(null);
+    });
+
+    it('should parse whitespace after the root value', function (): void {
+        // Act
+        $actual = JsonParser::document()->parse("null \t\r\n");
+
+        // Assert
+        expect($actual)->toBeSuccessOf(null);
+    });
+
+    it('should parse whitespace at array value boundaries', function (string $input, array $expected): void {
+        // Act
+        $actual = JsonParser::document()->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessEqualTo($expected);
+    })->with([
+        'after the opening bracket' => ['[ 1]', [1]],
+        'before a comma' => ['[1 ,2]', [1, 2]],
+        'after a comma' => ['[1, 2]', [1, 2]],
+        'before the closing bracket' => ['[1 ]', [1]],
+    ]);
+
+    it('should parse whitespace at object member boundaries', function (string $input, array $expected): void {
+        // Act
+        $actual = JsonParser::document()->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessEqualTo($expected);
+    })->with([
+        'after the opening brace' => ['{ "key":1}', ['key' => 1]],
+        'before the name separator' => ['{"key" :1}', ['key' => 1]],
+        'after the name separator' => ['{"key": 1}', ['key' => 1]],
+        'before a value separator' => ['{"first":1 ,"second":2}', ['first' => 1, 'second' => 2]],
+        'after a value separator' => ['{"first":1, "second":2}', ['first' => 1, 'second' => 2]],
+        'before the closing brace' => ['{"key":1 }', ['key' => 1]],
+    ]);
 
     it('should reject non-strict JSON', function (string $input): void {
         // Act
@@ -186,13 +245,65 @@ describe('JsonParser::simplified', function (): void {
         expect($actual)->toBeSuccessOf([]);
     });
 
-    it('should parse JSON whitespace around a value', function (): void {
+    it('should parse whitespace in an empty array', function (): void {
         // Act
-        $actual = JsonParser::simplified()->parse(" \t\r\n [ ] \n");
+        $actual = JsonParser::simplified()->parse('[ ]');
 
         // Assert
         expect($actual)->toBeSuccessOf([]);
     });
+
+    it('should parse whitespace in an empty object', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse('{ }');
+
+        // Assert
+        expect($actual)->toBeSuccessOf([]);
+    });
+
+    it('should parse whitespace before the root value', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse(" \t\r\nnull");
+
+        // Assert
+        expect($actual)->toBeSuccessOf(null);
+    });
+
+    it('should parse whitespace after the root value', function (): void {
+        // Act
+        $actual = JsonParser::simplified()->parse("null \t\r\n");
+
+        // Assert
+        expect($actual)->toBeSuccessOf(null);
+    });
+
+    it('should parse whitespace at array value boundaries', function (string $input, array $expected): void {
+        // Act
+        $actual = JsonParser::simplified()->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessEqualTo($expected);
+    })->with([
+        'after the opening bracket' => ['[ 1]', [1]],
+        'before a comma' => ['[1 ,2]', [1, 2]],
+        'after a comma' => ['[1, 2]', [1, 2]],
+        'before the closing bracket' => ['[1 ]', [1]],
+    ]);
+
+    it('should parse whitespace at object member boundaries', function (string $input, array $expected): void {
+        // Act
+        $actual = JsonParser::simplified()->parse($input);
+
+        // Assert
+        expect($actual)->toBeSuccessEqualTo($expected);
+    })->with([
+        'after the opening brace' => ['{ "key":1}', ['key' => 1]],
+        'before the name separator' => ['{"key" :1}', ['key' => 1]],
+        'after the name separator' => ['{"key": 1}', ['key' => 1]],
+        'before a value separator' => ['{"first":1 ,"second":2}', ['first' => 1, 'second' => 2]],
+        'after a value separator' => ['{"first":1, "second":2}', ['first' => 1, 'second' => 2]],
+        'before the closing brace' => ['{"key":1 }', ['key' => 1]],
+    ]);
 
     it('should consume the complete simplified JSON text', function (): void {
         // Arrange
